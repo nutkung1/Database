@@ -5,8 +5,7 @@ import os
 import streamlit_shadcn_ui as ui
 import pandas as pd
 import streamlit_authenticator as stauth
-from streamlit_elements import elements, mui, html
-from st_pages import Page, show_pages, add_page_title
+from st_pages import Page, show_pages
 # Set Streamlit page configuration
 st.set_page_config(
     page_title="Streamlit App",
@@ -26,7 +25,7 @@ mydb = mysql.connector.connect(
     host=os.getenv("host"),
     user=os.getenv("user"),
     password=os.getenv("password"),
-    database=os.getenv("database"),
+    database=os.getenv("databaseProj"),
     auth_plugin='mysql_native_password'
 )
 mycursor = mydb.cursor()
@@ -160,49 +159,47 @@ for index in range(len(emails)):
     credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
 authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='nutty', cookie_expiry_days=2)
 
-col = st.columns([1,3,1])
-with col[1]:
-    if not st.session_state['authentication_status']:
-        st.markdown("<h1 style='text-align: center; background-color: #1565c0; color: #ece5f6'>Login</h1>", unsafe_allow_html=True)
-        st.markdown("<h4 style='text-align: center; background-color: #1565c0; color: #ece5f6'>KMUTT University</h4>", unsafe_allow_html=True)
+if not st.session_state['authentication_status']:
+    st.markdown("<h1 style='text-align: center; background-color: #1565c0; color: #ece5f6'>Login</h1>", unsafe_allow_html=True)
+    st.markdown("<h4 style='text-align: center; background-color: #1565c0; color: #ece5f6'>KMUTT University</h4>", unsafe_allow_html=True)
 
 
-    email, authenticator_status, username = authenticator.login(
-                        fields={'Form name': ':green[Login]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
-                                'Login': 'Login'})
-    
+email, authenticator_status, username = authenticator.login(
+                    fields={'Form name': ':green[Login]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
+                            'Login': 'Login'})
 if authenticator_status:
     st.session_state["authentication_status"] = True
     st.session_state["username"] = username
     st.session_state["role"] = role[usernames.index(username)]
     st.sidebar.image("https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png", width=100)
+    st.sidebar.subheader(f"Welcome {username}")
+    st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
     if st.session_state["authentication_status"] and st.session_state["role"] == "admin":
-        # Apply custom CSS styling
-        st.sidebar.subheader(f"Welcome {username}")
-        st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
         st.selectbox("Select an operations", ["Create", "Update", "Delete"])
-        col = st.columns(2)
+        col = st.columns([2, 1.5, 0.5])
         with col[0]:
-            search_query = st.text_input("Search", "")
+            sort_field = st.selectbox("Sort and Search By", options=invoice_df.columns)
         with col[1]:
-            sort_field = st.selectbox("เรียงข้อมูลโดย", options=invoice_df.columns)
-            sort_direction = st.radio(
-                                    "วิธีการเรียง", options=["⬆️", "⬇️"], horizontal=True
-                                )
-            dataset = invoice_df.sort_values(
-                                by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True
-                            )
-        # Filter the DataFrame based on the search query
-        dataset = dataset[dataset["Name"].str.contains(search_query, case=False)]
-        
+            search_query = st.text_input("Search", "")
+        with col[2]:
+            sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+
+        # Sort the dataset
+        dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+
+        # Convert the sort_field column to string
+        dataset[sort_field] = dataset[sort_field].astype(str)
+
+        # Filter the dataset based on search query
+        dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+
+
 
         # Display the filtered table
         ui.table(dataset)
 
     
     elif st.session_state["authentication_status"] and st.session_state["role"] == "student":
-        st.sidebar.write(f"Welcome {username}")
-        st.sidebar.write(f"Role: {role[usernames.index(username)]}")
         student_df = invoice_df.drop(columns=['password'])
         ui.table(student_df)
 
