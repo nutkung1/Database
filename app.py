@@ -5,6 +5,8 @@ import os
 import streamlit_shadcn_ui as ui
 import pandas as pd
 import streamlit_authenticator as stauth
+from streamlit_elements import elements, mui, html
+from st_pages import Page, show_pages, add_page_title
 # Set Streamlit page configuration
 st.set_page_config(
     page_title="Streamlit App",
@@ -158,14 +160,17 @@ for index in range(len(emails)):
     credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
 authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='nutty', cookie_expiry_days=2)
 
-if not st.session_state['authentication_status']:
-    st.markdown("<h1 style='text-align: center; background-color: #1565c0; color: #ece5f6'>Login</h1>", unsafe_allow_html=True)
-    st.markdown("<h4 style='text-align: center; background-color: #1565c0; color: #ece5f6'>KMUTT University</h4>", unsafe_allow_html=True)
+col = st.columns([1,3,1])
+with col[1]:
+    if not st.session_state['authentication_status']:
+        st.markdown("<h1 style='text-align: center; background-color: #1565c0; color: #ece5f6'>Login</h1>", unsafe_allow_html=True)
+        st.markdown("<h4 style='text-align: center; background-color: #1565c0; color: #ece5f6'>KMUTT University</h4>", unsafe_allow_html=True)
 
 
-email, authenticator_status, username = authenticator.login(
-                    fields={'Form name': ':green[Login]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
-                            'Login': 'Login'})
+    email, authenticator_status, username = authenticator.login(
+                        fields={'Form name': ':green[Login]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
+                                'Login': 'Login'})
+    
 if authenticator_status:
     st.session_state["authentication_status"] = True
     st.session_state["username"] = username
@@ -189,6 +194,7 @@ if authenticator_status:
                             )
         # Filter the DataFrame based on the search query
         dataset = dataset[dataset["Name"].str.contains(search_query, case=False)]
+        
 
         # Display the filtered table
         ui.table(dataset)
