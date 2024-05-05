@@ -159,16 +159,19 @@ for index in range(len(emails)):
     credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
 authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='nutty', cookie_expiry_days=2)
 
+if 'authentication_status' not in st.session_state:
+    # If it doesn't exist, initialize it to False
+    st.session_state['authentication_status'] = False
+
 if not st.session_state['authentication_status']:
     st.markdown("<h1 style='text-align: center; background-color: #1565c0; color: #ece5f6'>Login</h1>", unsafe_allow_html=True)
     st.markdown("<h4 style='text-align: center; background-color: #1565c0; color: #ece5f6'>KMUTT University</h4>", unsafe_allow_html=True)
 
-
 email, authenticator_status, username = authenticator.login(
                     fields={'Form name': ':green[Login]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
                             'Login': 'Login'})
-if authenticator_status:
-    st.session_state["authentication_status"] = True
+
+if st.session_state["authentication_status"]:
     st.session_state["username"] = username
     st.session_state["role"] = role[usernames.index(username)]
     st.sidebar.image("https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png", width=100)
