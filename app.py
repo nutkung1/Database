@@ -1,12 +1,14 @@
 import streamlit as st
 from dotenv import load_dotenv
 # import mysql.connector
+import datetime
 import snowflake.connector
 import os
 import streamlit_shadcn_ui as ui
 import pandas as pd
 import streamlit_authenticator as stauth
 from st_pages import Page, show_pages
+from streamlit_navigation_bar import st_navbar
 # Set Streamlit page configuration
 st.set_page_config(
     page_title="Streamlit App",
@@ -48,11 +50,6 @@ mydb = snowflake.connector.connect(
     schema="PUBLIC"
 )
 mycursor = mydb.cursor()
-
-mycursor.execute("SELECT * FROM student")
-data= mycursor.fetchall()
-# Creating a DataFrame
-invoice_df = pd.DataFrame(data, columns=['ID', 'Name', 'password', 'role'])
 custom_css = """
 <style>
 /* Custom CSS styles */
@@ -76,12 +73,14 @@ custom_css = """
 }
 
 div.stButton > button:first-child {
-    background-color: #f5f5f5;
-    color: #333333;
+    background-color: rgba(131, 168, 245, 1);
+    color: rgb(255, 255, 255);
     font-size: 10px;
     height: 3em;
     width: 30em;
-    border-radius: 10px 10px 10px 10px;
+    border-radius: 21.5px 21.5px 21.5px 21.5px;
+    margin:  0 auto;
+    display: block;
 }
 
 .stFormSubmitButton button {
@@ -198,35 +197,70 @@ if st.session_state["authentication_status"]:
     st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
     # Role ADMIN
     if st.session_state["authentication_status"] and st.session_state["role"] == "admin":
-        st.selectbox("Select an operations", ["Create", "Update", "Delete"])
-        col = st.columns([2, 1.5, 0.5])
-        with col[0]:
-            sort_field = st.selectbox("Sort and Search By", options=invoice_df.columns)
-        with col[1]:
-            search_query = st.text_input("Search", "")
-        with col[2]:
-            sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+        page = st_navbar(["Home", "CRUD", "Examples", "Community", "About"])
+        if page == "Home":
+            st.title("Home")
+            st.write("Welcome to the Home Page")
+            st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)
+        elif page == "CRUD":
+            mycursor.execute("SELECT * FROM student")
+            data= mycursor.fetchall()
+            # Creating a DataFrame
+            invoice_df = pd.DataFrame(data, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
+            CRUD = st.selectbox("Select an operations", ["Insert", "Update", "Delete"])
+            col = st.columns([2, 1.5, 0.5])
+            with col[0]:
+                sort_field = st.selectbox("Sort and Search By", options=invoice_df.columns)
+            with col[1]:
+                search_query = st.text_input("Search", "")
+            with col[2]:
+                sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
 
-        # Sort the dataset
-        dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+            # Sort the dataset
+            dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
 
-        # Convert the sort_field column to string
-        dataset[sort_field] = dataset[sort_field].astype(str)
+            # Convert the sort_field column to string
+            dataset[sort_field] = dataset[sort_field].astype(str)
 
-        # Filter the dataset based on search query
-        dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
-
-        # Display the filtered table
-        ui.table(dataset)
+            # Filter the dataset based on search query
+            dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+            
+            # Display the DataFrame using qgrid
+            st.table(dataset)
+            # Display the filtered table
+            if CRUD == "Insert":
+                with st.form(key="insert_form"):
+                    col = st.columns(2)
+                    with col[0]:
+                        student_firstname = st.text_input("First Name", placeholder="First Name", key="stu_first_name")
+                        student_lastname = st.text_input("Last Name", placeholder="Last Name", key="stu_last_name")
+                        student_gender = st.selectbox("Select an operations", ["Male", "Female", "Others"], key="stu_gender")
+                        student_department = st.text_input("Department", placeholder="Department", key="stu_department")
+                        student_year = st.number_input("Year", placeholder="Year", key="stu_year", min_value=1, max_value=4)
+                    with col[1]:
+                        student_semester = st.number_input("Semester", placeholder="Semester", key="stu_semester", min_value=1, max_value=2)
+                        student_address = st.text_input("Address", placeholder="Address", key="stu_address")
+                        student_email = st.text_input("Email", placeholder="Email", key="stu_email")
+                        student_phone = st.text_input("Phone Number", placeholder="Phone Number", key="stu_phone")
+                        student_birth = st.date_input("Date input", min_value=datetime.date(year=1990, month=12, day=31))
+                    submit = st.form_submit_button("Submit")
+                    if submit:
+                        mycursor.execute("SELECT COUNT(*) FROM student")
+                        result = mycursor.fetchone()[0]
+                        sql = "INSERT INTO student (student_id, student_firstname, student_lastname, student_gender, department_name, student_year, student_semester, student_address, student_email, student_phone, student_dateofbirth) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
+                        val = (result + 1, student_firstname, student_lastname, student_gender, student_department, student_year, student_semester, student_address, student_email, student_phone, student_birth)
+                        mycursor.execute(sql, val)
+                        mydb.commit()
+                        st.success("Insert Successfully")
 
     #ROLE Student
     elif st.session_state["authentication_status"] and st.session_state["role"] == "student":
-        student_df = invoice_df.drop(columns=['password'])
-        ui.table(student_df)
+        st.write("Welcome to Student Page")
+        # student_df = invoice_df.drop(columns=['password'])
+        # ui.table(student_df)
 
 
     authenticator.logout("Logout", "sidebar")
 # else:
 #     st.write("Wrong email or password, please try again.")
-
 
