@@ -8,6 +8,7 @@ import streamlit_shadcn_ui as ui
 import pandas as pd
 import streamlit_authenticator as stauth
 from st_pages import Page, show_pages
+import time
 from streamlit_navigation_bar import st_navbar
 # Set Streamlit page configuration
 st.set_page_config(
@@ -207,6 +208,7 @@ if st.session_state["authentication_status"]:
             data= mycursor.fetchall()
             # Creating a DataFrame
             invoice_df = pd.DataFrame(data, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
+            invoice_df['student_dateofbirth'] = invoice_df['student_dateofbirth'].astype(str)
             CRUD = st.selectbox("Select an operations", ["Insert", "Update", "Delete"])
             col = st.columns([2, 1.5, 0.5])
             with col[0]:
@@ -215,18 +217,13 @@ if st.session_state["authentication_status"]:
                 search_query = st.text_input("Search", "")
             with col[2]:
                 sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
-
             # Sort the dataset
             dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
-
             # Convert the sort_field column to string
             dataset[sort_field] = dataset[sort_field].astype(str)
-
             # Filter the dataset based on search query
             dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
-            
-            # Display the DataFrame using qgrid
-            st.table(dataset)
+            ui.table(dataset)
             # Display the filtered table
             if CRUD == "Insert":
                 with st.form(key="insert_form"):
@@ -245,13 +242,14 @@ if st.session_state["authentication_status"]:
                         student_birth = st.date_input("Date input", min_value=datetime.date(year=1990, month=12, day=31))
                     submit = st.form_submit_button("Submit")
                     if submit:
-                        mycursor.execute("SELECT COUNT(*) FROM student")
+                        mycursor.execute("SELECT MAX(student_id) FROM student")
                         result = mycursor.fetchone()[0]
+                        next_student_id = result + 1 if result is not None else 1
                         sql = "INSERT INTO student (student_id, student_firstname, student_lastname, student_gender, department_name, student_year, student_semester, student_address, student_email, student_phone, student_dateofbirth) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-                        val = (result + 1, student_firstname, student_lastname, student_gender, student_department, student_year, student_semester, student_address, student_email, student_phone, student_birth)
+                        val = (next_student_id, student_firstname, student_lastname, student_gender, student_department, student_year, student_semester, student_address, student_email, student_phone, student_birth)
                         mycursor.execute(sql, val)
                         mydb.commit()
-                        st.success("Insert Successfully")
+                        st.rerun()
 
     #ROLE Student
     elif st.session_state["authentication_status"] and st.session_state["role"] == "student":
