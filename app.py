@@ -53,24 +53,21 @@ mydb = snowflake.connector.connect(
 mycursor = mydb.cursor()
 custom_css = """
 <style>
-/* Custom CSS styles */
 .stForm {
     max-width: 400px;
     margin: 0 auto;
     padding: 20px;
-    background-color: #f5f5f5;
-    border-radius: 10px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 13px;
+
 }
 
 .stTextInput input[type="text"],
 .stTextInput input[type="password"] {
     width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    padding: 5px;
+    # border: 1px solid #ccc;
+    # border-radius: 5px;
 }
 
 div.stButton > button:first-child {
@@ -80,8 +77,10 @@ div.stButton > button:first-child {
     height: 3em;
     width: 30em;
     border-radius: 21.5px 21.5px 21.5px 21.5px;
-    margin:  0 auto;
+    margin: 25px auto 0 auto;
     display: block;
+
+
 }
 
 .stFormSubmitButton button {
@@ -117,7 +116,9 @@ div[data-baseweb="select"]:hover {
 }
 
 [data-testid="stForm"] {
-    background: LightBlue;
+    max-height: 10000px;
+    background: White;
+    padding:50px;
 }
 
 .custom-sidebar {
@@ -140,7 +141,6 @@ div[data-baseweb="select"]:hover {
     color: #d1d5db;
 }
 
-/* Custom select box style for sorting */
 .custom-sort-select select {
     width: 100%;
     padding: 10px;
@@ -152,7 +152,6 @@ div[data-baseweb="select"]:hover {
     color: #333333;
 }
 </style>
-
 """
 
 
@@ -182,13 +181,25 @@ if 'authentication_status' not in st.session_state:
     # If it doesn't exist, initialize it to False
     st.session_state['authentication_status'] = False
 
+logo_url = "https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png"
+
+login_header = f"""
+<div style="text-align: center; background-color: rgba(131, 168, 245, 1); color: #ece5f6; padding: 20px; border-radius: 10px;">
+    <div style="display: inline-block; background-color: rgba(131, 168, 245, 1); padding: 10px;">
+        <img src="{logo_url}" alt="Logo" width="100">
+    </div>
+    <div style="margin-top: 20px;">
+        <h2 style='text-align: center; color: #ece5f6; padding: 0px;'>Oceanview College</h2>
+    </div>
+</div>
+"""
+
 if not st.session_state['authentication_status']:
-    st.markdown("<h1 style='text-align: center; background-color: #1565c0; color: #ece5f6'>Login</h1>", unsafe_allow_html=True)
-    st.markdown("<h4 style='text-align: center; background-color: #1565c0; color: #ece5f6'>KMUTT University</h4>", unsafe_allow_html=True)
+    st.markdown(login_header, unsafe_allow_html=True)
 
 email, authenticator_status, username = authenticator.login(
-                    fields={'Form name': ':green[Login]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
-                            'Login': 'Login'})
+                    fields={'Form name': ':black[Log In]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
+                            'Login': 'Log in'})
 
 if st.session_state["authentication_status"]:
     st.session_state["username"] = username
