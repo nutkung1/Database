@@ -81,6 +81,11 @@ div.stButton > button:first-child{
     display: block;
 }
 
+div.stButton > button:hover {
+    background-color: #f5f5f5;
+    color: #333333;
+}
+
 div[data-baseweb="select"] {
     background-color: #ffffff;
     border: 1px solid #ced4da;
