@@ -8,6 +8,7 @@ import streamlit_shadcn_ui as ui
 import pandas as pd
 import streamlit_authenticator as stauth
 from st_pages import Page, show_pages
+from streamlit_extras.stylable_container import stylable_container
 import time
 from streamlit_navigation_bar import st_navbar
 # Set Streamlit page configuration
@@ -59,7 +60,6 @@ custom_css = """
     padding: 20px;
     background-color: rgba(255, 255, 255, 1);
     border-radius: 13px;
-
 }
 
 .stTextInput input[type="text"],
@@ -70,26 +70,15 @@ custom_css = """
     # border-radius: 5px;
 }
 
-div.stButton > button:first-child {
+div.stButton > button:first-child{
     background-color: rgba(131, 168, 245, 1);
     color: rgb(255, 255, 255);
     font-size: 10px;
     height: 3em;
     width: 30em;
     border-radius: 21.5px 21.5px 21.5px 21.5px;
-    margin: 25px auto 0 auto;
+    margin: 0 auto;
     display: block;
-
-
-}
-
-.stFormSubmitButton button {
-    background-color: #f5f5f5;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
 }
 
 div[data-baseweb="select"] {
@@ -111,9 +100,6 @@ div[data-baseweb="select"]:hover {
     border-color: #6c757d;
 }
 
-.stFormSubmitButton button:hover {
-    background-color: #f5f5f5;
-}
 
 [data-testid="stForm"] {
     max-height: 10000px;
@@ -156,6 +142,7 @@ div[data-baseweb="select"]:hover {
 
 
 st.markdown(custom_css, unsafe_allow_html=True)
+
 
 
 mycursor.execute("SELECT * FROM authenticator")
@@ -209,18 +196,20 @@ if st.session_state["authentication_status"]:
     st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
     # Role ADMIN
     if st.session_state["authentication_status"] and st.session_state["role"] == "admin":
-        page = st_navbar(["Home", "CRUD", "Examples", "Community", "About"])
+        page = st_navbar(["Home", "CRUD", "Enroll", "Community", "About"])
         if page == "Home":
             st.title("Home")
             st.write("Welcome to the Home Page")
-            st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)
+            st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)  
         elif page == "CRUD":
             mycursor.execute("SELECT * FROM student")
-            data= mycursor.fetchall()
+            data = mycursor.fetchall()
             # Creating a DataFrame
             invoice_df = pd.DataFrame(data, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
             invoice_df['student_dateofbirth'] = invoice_df['student_dateofbirth'].astype(str)
-            CRUD = st.selectbox("Select an operations", ["Insert", "Update", "Delete"])
+            invoice_df['student_role'] = "Student"
+
+            CRUD = st.selectbox("Select an operation", ["Insert", "Update", "Delete"])
             col = st.columns([2, 1.5, 0.5])
             with col[0]:
                 sort_field = st.selectbox("Sort and Search By", options=invoice_df.columns)
@@ -228,13 +217,43 @@ if st.session_state["authentication_status"]:
                 search_query = st.text_input("Search", "")
             with col[2]:
                 sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+
             # Sort the dataset
             dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
             # Convert the sort_field column to string
             dataset[sort_field] = dataset[sort_field].astype(str)
+
             # Filter the dataset based on search query
-            dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
-            ui.table(dataset)
+            if search_query:
+                dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+
+            # Table with view details button
+            colms = st.columns((1, 1, 1, 1, 1, 1, 1))
+            fields = ['ID', 'Firstname', "Lastname", "email", "Department", "Role"]
+            for col, field_name in zip(colms, fields):
+                # header
+                col.write(field_name)
+
+            # Display the data
+            if not dataset.empty:
+                for x in range(len(dataset)):
+                    col1, col2, col3, col4, col5, col6, col7 = st.columns((1, 1, 1, 1, 1, 1, 1))
+                    col1.write(dataset['student_id'][x])  # email
+                    col2.write(dataset['student_firstname'][x])  # unique ID
+                    col3.write(dataset['student_lastname'][x])   # email status
+                    col4.write(dataset['student_email'][x])
+                    col5.write(dataset['department_name'][x])
+                    col6.write(dataset['student_role'][x])
+                    button_type = "View Detail"
+                    button_phold = col7.empty()  # create a placeholder
+                    do_action = button_phold.button(button_type, key=x)
+                    if do_action:
+                        pass # do some action with a row's data
+                        button_phold.empty()  #  remove button
+            else:
+                st.warning("No data matching the search query.")
+
+
             # Display the filtered table
             if CRUD == "Insert":
                 with st.form(key="insert_form"):
