@@ -1,6 +1,7 @@
 import streamlit as st
 from dotenv import load_dotenv
-import mysql.connector
+# import mysql.connector
+import snowflake.connector
 import os
 import streamlit_shadcn_ui as ui
 import pandas as pd
@@ -21,16 +22,34 @@ def split_frame(input_df, rows):
 
 load_dotenv()
 
-mydb = mysql.connector.connect(
-    host=os.getenv("host"),
-    user=os.getenv("user"),
-    password=os.getenv("password"),
-    database=os.getenv("databaseProj"),
-    auth_plugin='mysql_native_password'
+# Mysql
+# mydb = snowflake.connector.connect(
+#     host=os.getenv("host"),
+#     user=os.getenv("user"),
+#     password=os.getenv("password"),
+#     database=os.getenv("databaseProj"),
+#     auth_plugin='mysql_native_password'
+# )
+# mycursor = mydb.cursor()
+# SNOWFLAKE
+account = os.getenv('account')
+user = os.getenv('user_snow')
+password = os.getenv('password')
+role = os.getenv('role')
+warehouse = os.getenv('warehouse')
+database = os.getenv('database')
+schema = os.getenv('schema')
+mydb = snowflake.connector.connect(
+    user="suchanat",
+    password="NuT0863771558-",
+    account="PIPWYPD-LO69630",
+    warehouse="COMPUTE_WH",
+    database="DATABASE",
+    schema="PUBLIC"
 )
 mycursor = mydb.cursor()
 
-mycursor.execute("SELECT * FROM Test")
+mycursor.execute("SELECT * FROM student")
 data= mycursor.fetchall()
 # Creating a DataFrame
 invoice_df = pd.DataFrame(data, columns=['ID', 'Name', 'password', 'role'])
@@ -140,17 +159,17 @@ div[data-baseweb="select"]:hover {
 st.markdown(custom_css, unsafe_allow_html=True)
 
 
-mycursor.execute("SELECT * FROM Test")
+mycursor.execute("SELECT * FROM authenticator")
 result = mycursor.fetchall()
 emails = []
 usernames = []
 passwords = []
 role = []
 for user in result:
-    emails.append(user[1])  # Assuming email is the first field in the tuple
-    usernames.append(user[1])
-    passwords.append(user[2])  # Assuming password is the second field in the tuple
-    role.append(user[3])  # Assuming role is the third field in the tuple
+    emails.append(user[0])  # Assuming email is the first field in the tuple
+    usernames.append(user[0])
+    passwords.append(user[1])  # Assuming password is the second field in the tuple
+    role.append(user[2])  # Assuming role is the third field in the tuple
 credentials = {'usernames': {}}  # Fix the key here
 # st.write(emails)
 # st.write(usernames)
@@ -177,6 +196,7 @@ if st.session_state["authentication_status"]:
     st.sidebar.image("https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png", width=100)
     st.sidebar.subheader(f"Welcome {username}")
     st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
+    # Role ADMIN
     if st.session_state["authentication_status"] and st.session_state["role"] == "admin":
         st.selectbox("Select an operations", ["Create", "Update", "Delete"])
         col = st.columns([2, 1.5, 0.5])
@@ -196,17 +216,17 @@ if st.session_state["authentication_status"]:
         # Filter the dataset based on search query
         dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
 
-
-
         # Display the filtered table
         ui.table(dataset)
 
-    
+    #ROLE Student
     elif st.session_state["authentication_status"] and st.session_state["role"] == "student":
         student_df = invoice_df.drop(columns=['password'])
         ui.table(student_df)
 
 
     authenticator.logout("Logout", "sidebar")
+# else:
+#     st.write("Wrong email or password, please try again.")
 
 
