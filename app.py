@@ -10,6 +10,8 @@ import streamlit_authenticator as stauth
 from st_pages import Page, show_pages
 from streamlit_extras.stylable_container import stylable_container
 import time
+from streamlit.source_util import get_pages
+from streamlit.components.v1 import html
 from streamlit_navigation_bar import st_navbar
 # Set Streamlit page configuration
 st.set_page_config(
@@ -25,6 +27,31 @@ def split_frame(input_df, rows):
     return df
 
 load_dotenv()
+
+def nav_page(page_name, timeout_secs=3):
+    nav_script = """
+        <script type="text/javascript">
+            function attempt_nav_page(page_name, start_time, timeout_secs) {
+                var links = window.parent.document.getElementsByTagName("a");
+                for (var i = 0; i < links.length; i++) {
+                    if (links[i].href.toLowerCase().endsWith("/" + page_name.toLowerCase())) {
+                        links[i].click();
+                        return;
+                    }
+                }
+                var elasped = new Date() - start_time;
+                if (elasped < timeout_secs * 1000) {
+                    setTimeout(attempt_nav_page, 100, page_name, start_time, timeout_secs);
+                } else {
+                    alert("Unable to navigate to page '" + page_name + "' after " + timeout_secs + " second(s).");
+                }
+            }
+            window.addEventListener("load", function() {
+                attempt_nav_page("%s", new Date(), %d);
+            });
+        </script>
+    """ % (page_name, timeout_secs)
+    html(nav_script)
 
 # Mysql
 # mydb = snowflake.connector.connect(
@@ -253,8 +280,10 @@ if st.session_state["authentication_status"]:
                     button_phold = col7.empty()  # create a placeholder
                     do_action = button_phold.button(button_type, key=x)
                     if do_action:
-                        pass # do some action with a row's data
-                        button_phold.empty()  #  remove button
+                        # st.empty()
+                        # st.experimental_set_query_params(detail="pages/student_detail", student_id=dataset['student_id'][x])
+                        st.session_state["student_id"] = dataset['student_id'][x]
+                        st.switch_page("pages/studentDetail.py")
             else:
                 st.warning("No data matching the search query.")
 
