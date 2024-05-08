@@ -227,12 +227,110 @@ if st.session_state["authentication_status"]:
     st.sidebar.subheader(f"Welcome {username}")
     st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
     # Role ADMIN
+    
     if st.session_state["authentication_status"] and st.session_state["role"] == "admin":
-        page = st_navbar(["Home", "CRUD", "Enroll", "Community", "About"])
+        styles = {
+            "nav": {
+                "background-color": "rgb(135, 206, 235)",  # Sky Blue
+            },
+            "div": {
+                "max-width": "32rem",
+            },
+            "span": {
+                "border-radius": "1rem",
+                "color": "rgb(49, 51, 63)",
+                "margin": "0 0.125rem",
+                "padding": "0.4375rem 0.625rem",
+            },
+            "active": {
+                "background-color": "rgba(255, 255, 255, 0.25)",
+            },
+            "hover": {
+                "background-color": "rgba(255, 255, 255, 0.35)",
+            },
+        }
+
+        page = st_navbar(["Home", "Course", "CRUD", "Community", "About"], styles=styles)
         if page == "Home":
             st.title("Home")
             st.write("Welcome to the Home Page")
             st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)  
+        elif page == "Course":
+            # Sample course data
+            course_data = {
+                'Course ID': ['CSE101', 'MAT202', 'BIO303', 'CHE404', 'PHY505', 'ECO606', 'PSY707', 'ENG808', 'HIS909'],
+                'Course Name': ['Introduction to Computer Science', 'Linear Algebra', 'Biology Fundamentals',
+                                'Chemistry Essentials', 'Physics Principles', 'Economics for Beginners',
+                                'Psychology Basics', 'Advanced English Literature', 'History of Civilization'],
+                'Instructor': ['Prof. Smith', 'Dr. Johnson', 'Prof. Lee', 'Dr. Brown', 'Prof. Williams',
+                            'Dr. Taylor', 'Prof. Martinez', 'Dr. Anderson', 'Prof. Thompson'],
+                'Instructor_ID': [101, 102, 103, 104, 105, 106, 107, 108, 109],  # Example Instructor IDs
+                'Description': ['An introductory course covering the basics of computer science.',
+                                'A course covering fundamental concepts in linear algebra.',
+                                'An overview of basic concepts in biology and biochemistry.',
+                                'Essential principles of chemistry for beginners for junior.',
+                                'Introduction to fundamental principles of physics.',
+                                'An introductory course to the basics of economics.',
+                                'Understanding the fundamentals of psychology.',
+                                'Exploration of advanced English literary works.',
+                                'A journey through the history of human civilization.'],
+                'Image URL': ['https://images.unsplash.com/photo-1610563166150-b34df4f3bcd6?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29tcHV0ZXIlMjBzY2llbmNlfGVufDB8fDB8fHww',
+                            'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Linear_subspaces_with_shading.svg/1200px-Linear_subspaces_with_shading.svg.png',
+                            'https://img.freepik.com/free-vector/science-lab-objects_23-2148488312.jpg?size=338&ext=jpg&ga=GA1.1.1224184972.1715126400&semt=sph',
+                            'https://cdn.britannica.com/86/193986-050-7B2DBB6A/ball-and-stick-model-structure-atoms.jpg',
+                            'https://media.istockphoto.com/id/936903524/vector/blackboard-inscribed-with-scientific-formulas-and-calculations-in-physics-and-mathematics-can.jpg?s=612x612&w=0&k=20&c=sRLsJbHUVOYvZ_M16hti4fF9NM0RysfjAPUQrCJ8o4U=',
+                            'https://www.ntu.edu.sg/images/librariesprovider124/default-album/general-images/sss-webrevamp/sss_econs_coinsb6efd5c0-2a2a-4c0e-aa83-669f44598aea.jpg?Status=Master&sfvrsn=ee6510c_3',
+                            'https://www.udc.edu/social-udc/wp-content/uploads/sites/24/2018/03/Importance-of-Psychology_UDC.jpg',
+                            'https://heritageinstitute.in/wp-content/uploads/2019/01/Advanced-English.png',
+                            'https://dualcreditathome.com/wp-content/uploads/2014/02/history.jpg'],
+                'Course_schoolyear': [2023, 2023, 2024, 2024, 2024, 2023, 2023, 2024, 2023],  # Example school years
+                'Timetable': ['10.30-12.30', '13.00-15.00', '09.00-11.00', '10.30-12.30',
+                            '13.00-15.00', '09.00-11.00', '10.30-12.30', '13.00-15.00', '09.00-11.00']  # Example Timetable
+            }
+            # Create a DataFrame from the course data
+            df_courses = pd.DataFrame(course_data)
+            # Define header background image and text
+            header_bg_image = 'https://cdn.discordapp.com/attachments/1081112018360221696/1237724333326204928/asasdqweq.JPG?ex=663cb01c&is=663b5e9c&hm=950f617aa089f3d67c5e26c60c3e92c6dccd389fe9c86bbfefbd907a2dd3d4cf&'
+            header_text = """ 
+            <h1 style="color: white; text-align: center; margin-left: 40px; margin-top: 40px;">Helping You Grow</h1>
+            <br>
+            <h5 style="color: white; font-weight: 100; text-align: center; margin-left: 40px; margin-top: 10px;">Learning is the compass that guides us through the uncharted territories of knowledge</h5>
+            <h5 style="color: white; font-weight: 100; text-align: center; margin-left: 40px; margin-top: 10px;">illuminating our path with the brilliance of understanding.</h5>
+            """
+
+
+            # Page title
+            # Display header with background image and text
+            st.markdown(
+                f"""
+                <div style="padding: 0; background-size: cover;">
+                    <div style="background-image: url('{header_bg_image}'); filter: blur(2px); position: absolute; top: 0; left: 0; width: 100%; height: 350px; background-size: contain;"></div>
+                    <div style="position: relative; z-index: 0; margin-top: 50px; margin-bottom: 150px;">{header_text}</div>
+                </div>""",unsafe_allow_html=True
+            )
+
+            with st.container(border=True,height=1000):
+                st.markdown(f"""<h2 style=" text-align: center; margin-bottom:30px;">Active courses now</h2>""", unsafe_allow_html=True)
+                col1, col2, col3= st.columns(3)
+                
+                for index, course in df_courses.iterrows():
+                    with eval(f"col{index % 3+ 1}"):  # Alternate between the four columns
+                        col4, col5, col6= st.columns(3)
+                        with col5:
+                            st.markdown(
+                                f"""<div style="height: 133px; width: 200px; overflow: hidden; border-radius: 15px; margin-top:20px;">
+                                    <img src="{course['Image URL']}" alt="{course['Course Name']}" style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>""",
+                                unsafe_allow_html=True
+                            )
+                        st.markdown(f"""<h4 style=" text-align: center; margin-bottom:10px;">{course['Course Name']}</h4>""", unsafe_allow_html=True)
+                        with st.container(border=True,):
+                            st.write(f"**Course ID:** {course['Course ID']}")
+                            st.write(f"**Instructor:** {course['Instructor']} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Instructor ID:** {course['Instructor_ID']}")
+                            st.write(f"**Description:** {course['Description']}")
+                            st.write(f"**Course School Year:** {course['Course_schoolyear']}")
+                            st.write(f"**Timetable:** {course['Timetable']}")
+                            st.button(f"**Enrollment** {course['Course ID']}")
         elif page == "CRUD":
             mycursor.execute("SELECT * FROM student")
             data = mycursor.fetchall()
