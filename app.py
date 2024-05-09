@@ -335,13 +335,18 @@ if st.session_state["authentication_status"]:
                 "background-color": "rgba(255, 255, 255, 0.35)",
             },
         }
-        student_id = st.session_state["student_id"]
+        # mycursor.execute("SELECT * FROM student WHERE student_email = %s", (st.session_state["username"], ))
+        # data = mycursor.fetchall()
+        # st.session_state["student_id"] = dataset['student_id'][x]
         page = st_navbar(["Home", "Detail", "Course"], styles=styles)
         if page == "Home":
             st.title("Home")
             st.write("Welcome to the Home Page")
             st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600) 
         elif page == "Detail":
+            mycursor.execute("SELECT student_id FROM student WHERE student_email = %s", (st.session_state["username"], ))
+            result = mycursor.fetchall()
+            student_id = result[0][0]
             st.title("Student Detail")
             mycursor.execute("SELECT * FROM student WHERE student_id = %s", (student_id, ))
             result = mycursor.fetchall()
@@ -364,7 +369,6 @@ if st.session_state["authentication_status"]:
                 st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][8])}</strong></p>", unsafe_allow_html=True)
                 st.markdown(f"<p style='font-size: 25px;'><strong>Department:</strong></p>", unsafe_allow_html=True)
                 st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][4])}</strong></p>", unsafe_allow_html=True)
-                # st.write(str(result[0][1]))
             with col[2]:
                 st.markdown(f"<p style='font-size: 25px;'><strong>Last name:</strong></p>", unsafe_allow_html=True)
                 st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][2])}</strong></p>", unsafe_allow_html=True)
