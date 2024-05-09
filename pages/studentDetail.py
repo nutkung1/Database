@@ -1,6 +1,14 @@
 import streamlit as st
 import snowflake.connector
 import pandas as pd
+def hide_sidebar():
+    st.markdown("""
+    <style>
+        section[data-testid="stSidebar"][aria-expanded="true"]{
+            display: none;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 student_id = st.session_state["student_id"]
 def Detail():
@@ -28,6 +36,7 @@ def Detail():
         display: block;
         }</style>"""
     st.markdown(custom_css, unsafe_allow_html=True)
+    hide_sidebar()
     # Creating a DataFrame
     invoice_df = pd.DataFrame(result, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
     invoice_df['student_dateofbirth'] = invoice_df['student_dateofbirth'].astype(str)

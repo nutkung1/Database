@@ -8,11 +8,11 @@ import streamlit_shadcn_ui as ui
 import pandas as pd
 import streamlit_authenticator as stauth
 from st_pages import Page, show_pages
-from streamlit_extras.stylable_container import stylable_container
-import time
-from streamlit.source_util import get_pages
-from streamlit.components.v1 import html
+# from streamlit_extras.stylable_container import stylable_container
+import hydralit_components as hc
 from streamlit_navigation_bar import st_navbar
+from Home import Home
+
 # Set Streamlit page configuration
 st.set_page_config(
     page_title="Streamlit App",
@@ -20,6 +20,15 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed",
 )
+
+def hide_sidebar():
+    st.markdown("""
+    <style>
+        section[data-testid="stSidebar"][aria-expanded="true"]{
+            display: none;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 @st.cache_data(show_spinner=False)
 def split_frame(input_df, rows):
@@ -190,11 +199,18 @@ login_header = f"""
 st.session_state["student_id"] = None
 if not st.session_state['authentication_status']:
     st.markdown(login_header, unsafe_allow_html=True)
+    hide_sidebar()
     
 
 email, authenticator_status, username = authenticator.login(
                     fields={'Form name': ':black[Log In]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
                             'Login': 'Log in'})
+if not st.session_state['authentication_status']:
+    col = st.columns([5, 4.2, 2])
+    with col[2]:
+        st.write("Don't have an account? Click button !!!")
+        if st.button("Sign Up"):
+            st.switch_page("pages/register.py")
 
 if st.session_state["authentication_status"]:
     st.session_state["username"] = username
@@ -203,7 +219,6 @@ if st.session_state["authentication_status"]:
     st.sidebar.subheader(f"Welcome {username}")
     st.sidebar.subheader(f"Role: {role[usernames.index(username)]}")
     # Role ADMIN
-    
     if st.session_state["authentication_status"] and st.session_state["role"] == "admin":
         styles = {
             "nav": {
@@ -228,9 +243,10 @@ if st.session_state["authentication_status"]:
 
         page = st_navbar(["Home", "CRUD", "Community", "About"], styles=styles)
         if page == "Home":
-            st.title("Home")
-            st.write("Welcome to the Home Page")
-            st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)  
+            Home()
+            # st.title("Home")
+            # st.write("Welcome to the Home Page")
+            # st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)  
         elif page == "CRUD":
             mycursor.execute("SELECT * FROM student")
             data = mycursor.fetchall()
@@ -335,14 +351,13 @@ if st.session_state["authentication_status"]:
                 "background-color": "rgba(255, 255, 255, 0.35)",
             },
         }
-        # mycursor.execute("SELECT * FROM student WHERE student_email = %s", (st.session_state["username"], ))
-        # data = mycursor.fetchall()
-        # st.session_state["student_id"] = dataset['student_id'][x]
         page = st_navbar(["Home", "Detail", "Course"], styles=styles)
+        
         if page == "Home":
-            st.title("Home")
-            st.write("Welcome to the Home Page")
-            st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600) 
+            Home()
+            # st.title("Home")
+            # st.write("Welcome to the Home Page")
+            # st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600) 
         elif page == "Detail":
             mycursor.execute("SELECT student_id FROM student WHERE student_email = %s", (st.session_state["username"], ))
             result = mycursor.fetchall()
@@ -360,7 +375,6 @@ if st.session_state["authentication_status"]:
             with col1[2]:
                 st.title(f"{result[0][1]} {result[0][2]}")
                 st.markdown(f"<p style='font-size: 20px; padding-bottom: 120px'><strong>Year: {result[0][5]}</strong></p>", unsafe_allow_html=True)
-
             col = st.columns([0.1, 0.2, 0.2, 0.2, 0.6])
             with col[1]:
                 st.markdown(f"<p style='font-size: 25px;'><strong>First Name:</strong></p>", unsafe_allow_html=True)
@@ -400,7 +414,7 @@ if st.session_state["authentication_status"]:
                 'Instructor': ['Prof. Smith', 'Dr. Johnson', 'Prof. Lee', 'Dr. Brown', 'Prof. Williams',
                             'Dr. Taylor', 'Prof. Martinez', 'Dr. Anderson', 'Prof. Thompson'],
                 'Instructor_ID': [101, 102, 103, 104, 105, 106, 107, 108, 109],  # Example Instructor IDs
-                'Description': ['An introductory course covering the basics of computer science.',
+                'Description': ['A course covering the basics of computer science.',
                                 'A course covering fundamental concepts in linear algebra.',
                                 'An overview of basic concepts in biology and biochemistry.',
                                 'Essential principles of chemistry for beginners for junior.',
@@ -432,7 +446,6 @@ if st.session_state["authentication_status"]:
             <h5 style="color: white; font-weight: 100; text-align: center; margin-left: 40px; margin-top: 10px;">Learning is the compass that guides us through the uncharted territories of knowledge</h5>
             <h5 style="color: white; font-weight: 100; text-align: center; margin-left: 40px; margin-top: 10px;">illuminating our path with the brilliance of understanding.</h5>
             """
-
 
             # Page title
             # Display header with background image and text
@@ -469,7 +482,6 @@ if st.session_state["authentication_status"]:
 
         # student_df = invoice_df.drop(columns=['password'])
         # ui.table(student_df)
-
 
     authenticator.logout("Logout", "sidebar")
 # else:

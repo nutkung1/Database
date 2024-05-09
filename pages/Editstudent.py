@@ -33,8 +33,17 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+def hide_sidebar():
+    st.markdown("""
+    <style>
+        section[data-testid="stSidebar"][aria-expanded="true"]{
+            display: none;
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 with st.form(key="edit_form"):
+    hide_sidebar()
     col = st.columns(2)
     with col[0]:
         student_firstname = st.text_input("First Name", placeholder="First Name", key="stu_first_name")
