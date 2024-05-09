@@ -1,5 +1,19 @@
 import streamlit as st
 
+def login():
+    logo_url = "https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png"
+
+    login_header = f"""
+    <div style="text-align: center; background-color: rgba(131, 168, 245, 1); color: #ece5f6; padding: 20px; border-radius: 10px;">
+        <div style="display: inline-block; background-color: rgba(131, 168, 245, 1); padding: 10px;">
+            <img src="{logo_url}" alt="Logo" width="100">
+        </div>
+        <div style="margin-top: 20px;">
+            <h2 style='text-align: center; color: #ece5f6; padding: 0px;'>Oceanview College</h2>
+        </div>
+    </div>
+    """
+    st.markdown(login_header, unsafe_allow_html=True)
 def Home():
     # st.title("Home")
     # st.write("Welcome to the Home Page")

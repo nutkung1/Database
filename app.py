@@ -11,7 +11,7 @@ from st_pages import Page, show_pages
 # from streamlit_extras.stylable_container import stylable_container
 import hydralit_components as hc
 from streamlit_navigation_bar import st_navbar
-from Home import Home
+from Home import Home, login
 
 # Set Streamlit page configuration
 st.set_page_config(
@@ -54,6 +54,7 @@ role = os.getenv('role')
 warehouse = os.getenv('warehouse')
 database = os.getenv('database')
 schema = os.getenv('schema')
+
 mydb = snowflake.connector.connect(
     user="suchanat",
     password="NuT0863771558-",
@@ -63,102 +64,101 @@ mydb = snowflake.connector.connect(
     schema="PUBLIC"
 )
 mycursor = mydb.cursor()
-custom_css = """
-<style>
-.stForm {
-    max-width: 400px;
-    margin: 0 auto;
-    padding: 20px;
-    background-color: rgba(255, 255, 255, 1);
-    border-radius: 13px;
-}
 
-.stTextInput input[type="text"],
-.stTextInput input[type="password"] {
-    width: 100%;
-    padding: 5px;
-    # border: 1px solid #ccc;
-    # border-radius: 5px;
-}
+# custom_css = """
+# <style>
+# .stForm {
+#     max-width: 400px;
+#     margin: 0 auto;
+#     padding: 20px;
+#     background-color: rgba(255, 255, 255, 1);
+#     border-radius: 13px;
+# }
 
-div.stButton > button:first-child{
-    background-color: rgba(131, 168, 245, 1);
-    color: rgb(255, 255, 255);
-    font-size: 10px;
-    height: 3em;
-    width: 30em;
-    border-radius: 21.5px 21.5px 21.5px 21.5px;
-    margin: 0 auto;
-    display: block;
-}
+# .stTextInput input[type="text"],
+# .stTextInput input[type="password"] {
+#     width: 100%;
+#     padding: 5px;
+#     # border: 1px solid #ccc;
+#     # border-radius: 5px;
+# }
 
-div.stButton > button:hover {
-    background-color: #f5f5f5;
-    color: #333333;
-}
+# div.stButton > button:first-child{
+#     background-color: rgba(131, 168, 245, 1);
+#     color: rgb(255, 255, 255);
+#     font-size: 10px;
+#     height: 3em;
+#     width: 30em;
+#     border-radius: 21.5px 21.5px 21.5px 21.5px;
+#     margin: 0 auto;
+#     display: block;
+# }
 
-div[data-baseweb="select"] {
-    background-color: #ffffff;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-}
+# div.stButton > button:hover {
+#     background-color: #f5f5f5;
+#     color: #333333;
+# }
 
-div[data-baseweb="select"] > div {
-    padding: 8px 12px;
-    color: #333333;
-}
+# div[data-baseweb="select"] {
+#     background-color: #ffffff;
+#     border: 1px solid #ced4da;
+#     border-radius: 5px;
+# }
 
-div[data-baseweb="select"] svg {
-    fill: #666666;
-}
+# div[data-baseweb="select"] > div {
+#     padding: 8px 12px;
+#     color: #333333;
+# }
 
-div[data-baseweb="select"]:hover {
-    border-color: #6c757d;
-}
+# div[data-baseweb="select"] svg {
+#     fill: #666666;
+# }
 
-
-[data-testid="stForm"] {
-    max-height: 10000px;
-    background: White;
-    padding:50px;
-}
-
-.custom-sidebar {
-    padding: 15px;
-    margin-bottom: 20px;
-    background-color: #374151;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.custom-sidebar:hover {
-    background-color: #4b5563;
-    transition: background-color 0.3s ease;
-}
-
-.custom-subheader {
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #d1d5db;
-}
-
-.custom-sort-select select {
-    width: 100%;
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 5px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #ffffff;
-    color: #333333;
-}
-</style>
-"""
+# div[data-baseweb="select"]:hover {
+#     border-color: #6c757d;
+# }
 
 
-st.markdown(custom_css, unsafe_allow_html=True)
+# [data-testid="stForm"] {
+#     max-height: 10000px;
+#     background: White;
+#     padding:50px;
+# }
 
+# .custom-sidebar {
+#     padding: 15px;
+#     margin-bottom: 20px;
+#     background-color: #374151;
+#     border-radius: 10px;
+#     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+# }
+
+# .custom-sidebar:hover {
+#     background-color: #4b5563;
+#     transition: background-color 0.3s ease;
+# }
+
+# .custom-subheader {
+#     font-size: 20px;
+#     font-weight: bold;
+#     margin-bottom: 10px;
+#     color: #d1d5db;
+# }
+
+# .custom-sort-select select {
+#     width: 100%;
+#     padding: 10px;
+#     margin-top: 5px;
+#     margin-bottom: 5px;
+#     border: 1px solid #ccc;
+#     border-radius: 5px;
+#     background-color: #ffffff;
+#     color: #333333;
+# }
+# </style>
+# """
+
+# st.markdown(custom_css, unsafe_allow_html=True)
 
 
 mycursor.execute("SELECT * FROM authenticator")
@@ -173,38 +173,36 @@ for user in result:
     passwords.append(user[1])  # Assuming password is the second field in the tuple
     role.append(user[2])  # Assuming role is the third field in the tuple
 credentials = {'usernames': {}}  # Fix the key here
-# st.write(emails)
-# st.write(usernames)
-# st.write(passwords)
 for index in range(len(emails)):
     credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
 authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='nutty', cookie_expiry_days=2)
 
 if 'authentication_status' not in st.session_state:
-    # If it doesn't exist, initialize it to False
     st.session_state['authentication_status'] = False
 
-logo_url = "https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png"
+# logo_url = "https://static-00.iconduck.com/assets.00/shark-emoji-512x503-7lv5l7l3.png"
 
-login_header = f"""
-<div style="text-align: center; background-color: rgba(131, 168, 245, 1); color: #ece5f6; padding: 20px; border-radius: 10px;">
-    <div style="display: inline-block; background-color: rgba(131, 168, 245, 1); padding: 10px;">
-        <img src="{logo_url}" alt="Logo" width="100">
-    </div>
-    <div style="margin-top: 20px;">
-        <h2 style='text-align: center; color: #ece5f6; padding: 0px;'>Oceanview College</h2>
-    </div>
-</div>
-"""
+# login_header = f"""
+# <div style="text-align: center; background-color: rgba(131, 168, 245, 1); color: #ece5f6; padding: 20px; border-radius: 10px;">
+#     <div style="display: inline-block; background-color: rgba(131, 168, 245, 1); padding: 10px;">
+#         <img src="{logo_url}" alt="Logo" width="100">
+#     </div>
+#     <div style="margin-top: 20px;">
+#         <h2 style='text-align: center; color: #ece5f6; padding: 0px;'>Oceanview College</h2>
+#     </div>
+# </div>
+# """
 st.session_state["student_id"] = None
-if not st.session_state['authentication_status']:
-    st.markdown(login_header, unsafe_allow_html=True)
-    hide_sidebar()
-    
+if not st.session_state['authentication_status'] and st.session_state["student_id"] is None:
+    # st.markdown(login_header, unsafe_allow_html=True)
+    login()
+    # hide_sidebar()
+
 
 email, authenticator_status, username = authenticator.login(
                     fields={'Form name': ':black[Log In]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
                             'Login': 'Log in'})
+
 if not st.session_state['authentication_status']:
     col = st.columns([5, 4.2, 2])
     with col[2]:
@@ -223,15 +221,18 @@ if st.session_state["authentication_status"]:
         styles = {
             "nav": {
                 "background-color": "rgb(135, 206, 235)",  # Sky Blue
+                "padding": "0.25rem 0.5rem",  # Adjust padding
+                "margin": "0",  # Remove any margin
             },
             "div": {
                 "max-width": "32rem",
+                "margin": "0",  # Remove any margin
             },
             "span": {
                 "border-radius": "1rem",
                 "color": "rgb(49, 51, 63)",
                 "margin": "0 0.125rem",
-                "padding": "0.4375rem 0.625rem",
+                "padding": "0.25rem 0.375rem",  # Adjust padding
             },
             "active": {
                 "background-color": "rgba(255, 255, 255, 0.25)",
@@ -243,10 +244,7 @@ if st.session_state["authentication_status"]:
 
         page = st_navbar(["Home", "CRUD", "Community", "About"], styles=styles)
         if page == "Home":
-            Home()
-            # st.title("Home")
-            # st.write("Welcome to the Home Page")
-            # st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600)  
+            Home() 
         elif page == "CRUD":
             mycursor.execute("SELECT * FROM student")
             data = mycursor.fetchall()
@@ -354,10 +352,7 @@ if st.session_state["authentication_status"]:
         page = st_navbar(["Home", "Detail", "Course"], styles=styles)
         
         if page == "Home":
-            Home()
-            # st.title("Home")
-            # st.write("Welcome to the Home Page")
-            # st.image("image/kmutt-websitelogo-01-scaled.jpg", width=600) 
+            Home() 
         elif page == "Detail":
             mycursor.execute("SELECT student_id FROM student WHERE student_email = %s", (st.session_state["username"], ))
             result = mycursor.fetchall()
@@ -482,8 +477,100 @@ if st.session_state["authentication_status"]:
 
         # student_df = invoice_df.drop(columns=['password'])
         # ui.table(student_df)
-
     authenticator.logout("Logout", "sidebar")
-# else:
-#     st.write("Wrong email or password, please try again.")
+
+custom_css = """
+    <style>
+    .stForm {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: rgba(255, 255, 255, 1);
+        border-radius: 13px;
+    }
+
+    .stTextInput input[type="text"],
+    .stTextInput input[type="password"] {
+        width: 100%;
+        padding: 5px;
+        # border: 1px solid #ccc;
+        # border-radius: 5px;
+    }
+
+    div.stButton > button:first-child{
+        background-color: rgba(131, 168, 245, 1);
+        color: rgb(255, 255, 255);
+        font-size: 10px;
+        height: 3em;
+        width: 30em;
+        border-radius: 21.5px 21.5px 21.5px 21.5px;
+        margin: 0 auto;
+        display: block;
+    }
+
+    div.stButton > button:hover {
+        background-color: #f5f5f5;
+        color: #333333;
+    }
+
+    div[data-baseweb="select"] {
+        background-color: #ffffff;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+    }
+
+    div[data-baseweb="select"] > div {
+        padding: 8px 12px;
+        color: #333333;
+    }
+
+    div[data-baseweb="select"] svg {
+        fill: #666666;
+    }
+
+    div[data-baseweb="select"]:hover {
+        border-color: #6c757d;
+    }
+
+
+    [data-testid="stForm"] {
+        max-height: 10000px;
+        background: White;
+        padding:50px;
+    }
+
+    .custom-sidebar {
+        padding: 15px;
+        margin-bottom: 20px;
+        background-color: #374151;
+        border-radius: 10px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .custom-sidebar:hover {
+        background-color: #4b5563;
+        transition: background-color 0.3s ease;
+    }
+
+    .custom-subheader {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #d1d5db;
+    }
+
+    .custom-sort-select select {
+        width: 100%;
+        padding: 10px;
+        margin-top: 5px;
+        margin-bottom: 5px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #ffffff;
+        color: #333333;
+    }
+    </style>
+    """
+
+st.markdown(custom_css, unsafe_allow_html=True)
 
