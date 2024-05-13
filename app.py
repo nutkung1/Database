@@ -344,6 +344,7 @@ if st.session_state["authentication_status"]:
             # Filter the dataset based on search query
             if search_query:
                 dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+                temp = dataset.index
 
             # Define custom CSS style
                 
@@ -372,8 +373,6 @@ if st.session_state["authentication_status"]:
                         do_action = button_phold.button("👁️ View Details", key=x)
                         
                         if do_action:
-                            # st.empty()
-                            # st.experimental_set_query_params(detail="pages/student_detail", student_id=dataset['student_id'][x])
                             st.session_state["ID"] = dataset['ID'][x]
                             st.switch_page("pages/studentDetail.py")
                 else:
