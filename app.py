@@ -11,7 +11,8 @@ from st_pages import Page, show_pages
 # from streamlit_extras.stylable_container import stylable_container
 import hydralit_components as hc
 from streamlit_navigation_bar import st_navbar
-from Home import Home, login
+from Home import Home, login, About, CRUD
+from streamlit_extras.stylable_container import stylable_container
 
 # Set Streamlit page configuration
 st.set_page_config(
@@ -196,19 +197,46 @@ st.session_state["student_id"] = None
 if not st.session_state['authentication_status'] and st.session_state["student_id"] is None:
     # st.markdown(login_header, unsafe_allow_html=True)
     login()
-    # hide_sidebar()
+    custom_css1="""<style>    div.stButton > button:first-child{
+        background-color: rgba(131, 168, 245, 1);
+        color: rgb(255, 255, 255);
+        font-size: 10px;
+        height: 3em;
+        width: 30em;
+        border-radius: 21.5px 21.5px 21.5px 21.5px;
+        margin: 0 auto;
+        display: block;
+    }
 
+    div.stButton > button:hover {
+        background-color: #f5f5f5;
+        color: #333333;
+    }
+    </style>"""
+    st.markdown(custom_css1, unsafe_allow_html=True)
+    # hide_sidebar()
 
 email, authenticator_status, username = authenticator.login(
                     fields={'Form name': ':black[Log In]', 'Username': ':blue[Username]', 'Password': ':blue[Password]',
                             'Login': 'Log in'})
-
 if not st.session_state['authentication_status']:
     col = st.columns([5, 4.2, 2])
     with col[2]:
         st.write("Don't have an account? Click button !!!")
         if st.button("Sign Up"):
             st.switch_page("pages/register.py")
+    hide_sidebar()
+
+# custom_css = """
+# <style>
+#     div.stButton > button:first-child{
+#     border-color: #83A8F5;
+#     color: #83A8F5;
+#     radius: 10px;
+# }
+# </style>
+# """
+# st.markdown(custom_css, unsafe_allow_html=True)
 
 if st.session_state["authentication_status"]:
     st.session_state["username"] = username
@@ -241,27 +269,73 @@ if st.session_state["authentication_status"]:
                 "background-color": "rgba(255, 255, 255, 0.35)",
             },
         }
+        
 
-        page = st_navbar(["Home", "CRUD", "Community", "About"], styles=styles)
+        page = st_navbar(["Home", "CRUD"], styles=styles)
         if page == "Home":
+            custom_css1="""<style>    div.stButton > button:first-child{
+                background-color: rgba(131, 168, 245, 1);
+                color: rgb(255, 255, 255);
+                font-size: 10px;
+                height: 3em;
+                width: 30em;
+                border-radius: 21.5px 21.5px 21.5px 21.5px;
+                margin: 0 auto;
+                display: block;
+            }
+
+            div.stButton > button:hover {
+                background-color: #f5f5f5;
+                color: #333333;
+            }
+            </style>"""
+            st.markdown(custom_css1, unsafe_allow_html=True)
             Home() 
         elif page == "CRUD":
             mycursor.execute("SELECT * FROM student")
             data = mycursor.fetchall()
             # Creating a DataFrame
-            invoice_df = pd.DataFrame(data, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
-            invoice_df['student_dateofbirth'] = invoice_df['student_dateofbirth'].astype(str)
-            invoice_df['student_role'] = "Student"
+            invoice_df = pd.DataFrame(data, columns=['ID', 'First Name', 'Last Name', 'Gender', 'Department', 'Year', 'Semester', 'Address', 'E-mail', 'Phone', 'Date of Birth'])
+            invoice_df['Date of Birth'] = invoice_df['Date of Birth'].astype(str)
+            invoice_df['Role'] = "Student"
+
+            css_styles = [
+                """
+                input {
+                    
+                    color: #83A8F5;
+                }
+                """,
+            ]
+
+            font_css = """
+            <style>
+            button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
+            font-size: 24px;
+            }
+            </style>
+            """
+
+            st.write(font_css, unsafe_allow_html=True)
+            st.write(font_css, unsafe_allow_html=True)
 
             # CRUD = st.selectbox("Select an operation", ["Insert", "Update", "Delete"])
-            col = st.columns([2, 1.5, 0.5])
+            col = st.columns([2, 2,1.5, 1.3,0.7])
             with col[0]:
-                sort_field = st.selectbox("Sort and Search By", options=invoice_df.columns)
+                st.title("Management System")
             with col[1]:
-                search_query = st.text_input("Search", "")
+                st.write(" ")
             with col[2]:
+                with stylable_container(
+                key="sort_search_by",
+                css_styles=css_styles,
+            ): sort_field = st.selectbox("Sort based on...", options=invoice_df.columns)
+            with col[3]:
+                search_query = st.text_input("Search", "")
+            with col[4]:
                 sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
-
+            st.write(font_css, unsafe_allow_html=True)
+            st.write(font_css, unsafe_allow_html=True)
             # Sort the dataset
             dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
             # Convert the sort_field column to string
@@ -271,61 +345,40 @@ if st.session_state["authentication_status"]:
             if search_query:
                 dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
 
-            # Table with view details button
-            colms = st.columns((1, 1, 1, 1, 1, 1, 1))
-            fields = ['ID', 'Firstname', "Lastname", "email", "Department", "Role"]
-            for col, field_name in zip(colms, fields):
-                # header
-                col.write(field_name)
+            # Define custom CSS style
+                
 
-            # Display the data
-            if not dataset.empty:
-                for x in range(len(dataset)):
-                    col1, col2, col3, col4, col5, col6, col7 = st.columns((1, 1, 1, 1, 1, 1, 1))
-                    col1.write(dataset['student_id'][x])  # email
-                    col2.write(dataset['student_firstname'][x])  # unique ID
-                    col3.write(dataset['student_lastname'][x])   # email status
-                    col4.write(dataset['student_email'][x])
-                    col5.write(dataset['department_name'][x])
-                    col6.write(dataset['student_role'][x])
-                    button_type = "View Detail"
-                    button_phold = col7.empty()  # create a placeholder
-                    do_action = button_phold.button(button_type, key=x)
-                    if do_action:
-                        # st.empty()
-                        # st.experimental_set_query_params(detail="pages/student_detail", student_id=dataset['student_id'][x])
-                        st.session_state["student_id"] = dataset['student_id'][x]
-                        st.switch_page("pages/studentDetail.py")
-            else:
-                st.warning("No data matching the search query.")
+            with st.container( border=True):
+                # Table with view details button
+                colms = st.columns((1, 1, 1, 1, 1, 1, 1))
+                fields = ['ID', 'First Name', "Last Name", "E-mail", "Department", "Role"]
+                for col, field_name in zip(colms, fields):
+                    # header with middle-sized font
+                    col.write(f"<span style='font-weight: bold;'>{field_name}</span>", unsafe_allow_html=True)
+                st.write(font_css, unsafe_allow_html=True)
+                
+                
+                # Display the data
+                if not dataset.empty:
+                    for x in range(len(dataset)):
+                        col1, col2, col3, col4, col5, col6, col7 = st.columns((1, 1, 1, 1, 1, 1, 1))
+                        col1.write(dataset['ID'][x])  # email
+                        col2.write(dataset['First Name'][x])  # unique ID
+                        col3.write(dataset['Last Name'][x])   # email status
+                        col4.write(dataset['E-mail'][x])
+                        col5.write(dataset['Department'][x])
+                        col6.write(dataset['Role'][x])
+                        button_phold = col7.empty()
+                        do_action = button_phold.button("👁️ View Details", key=x)
+                        
+                        if do_action:
+                            # st.empty()
+                            # st.experimental_set_query_params(detail="pages/student_detail", student_id=dataset['student_id'][x])
+                            st.session_state["ID"] = dataset['ID'][x]
+                            st.switch_page("pages/studentDetail.py")
+                else:
+                    st.warning("No data matching the search query.")
 
-
-            # Display the filtered table
-            # if CRUD == "Insert":
-            #     with st.form(key="insert_form"):
-            #         col = st.columns(2)
-            #         with col[0]:
-            #             student_firstname = st.text_input("First Name", placeholder="First Name", key="stu_first_name")
-            #             student_lastname = st.text_input("Last Name", placeholder="Last Name", key="stu_last_name")
-            #             student_gender = st.selectbox("Select an operations", ["Male", "Female", "Others"], key="stu_gender")
-            #             student_department = st.text_input("Department", placeholder="Department", key="stu_department")
-            #             student_year = st.number_input("Year", placeholder="Year", key="stu_year", min_value=1, max_value=4)
-            #         with col[1]:
-            #             student_semester = st.number_input("Semester", placeholder="Semester", key="stu_semester", min_value=1, max_value=2)
-            #             student_address = st.text_input("Address", placeholder="Address", key="stu_address")
-            #             student_email = st.text_input("Email", placeholder="Email", key="stu_email")
-            #             student_phone = st.text_input("Phone Number", placeholder="Phone Number", key="stu_phone")
-            #             student_birth = st.date_input("Date input", min_value=datetime.date(year=1990, month=12, day=31))
-            #         submit = st.form_submit_button("Submit")
-            #         if submit:
-            #             mycursor.execute("SELECT MAX(student_id) FROM student")
-            #             result = mycursor.fetchone()[0]
-            #             next_student_id = result + 1 if result is not None else 1
-            #             sql = "INSERT INTO student (student_id, student_firstname, student_lastname, student_gender, department_name, student_year, student_semester, student_address, student_email, student_phone, student_dateofbirth) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"
-            #             val = (next_student_id, student_firstname, student_lastname, student_gender, student_department, student_year, student_semester, student_address, student_email, student_phone, student_birth)
-            #             mycursor.execute(sql, val)
-            #             mydb.commit()
-            #             st.rerun()
 
     #ROLE Student
     elif st.session_state["authentication_status"] and st.session_state["role"] == "student":
@@ -349,7 +402,24 @@ if st.session_state["authentication_status"]:
                 "background-color": "rgba(255, 255, 255, 0.35)",
             },
         }
-        page = st_navbar(["Home", "Detail", "Course"], styles=styles)
+        page = st_navbar(["Home", "Detail", "Course", "About Us"], styles=styles)
+        custom_css1="""<style>    div.stButton > button:first-child{
+                background-color: rgba(131, 168, 245, 1);
+                color: rgb(255, 255, 255);
+                font-size: 10px;
+                height: 3em;
+                width: 30em;
+                border-radius: 21.5px 21.5px 21.5px 21.5px;
+                margin: 0 auto;
+                display: block;
+            }
+
+            div.stButton > button:hover {
+                background-color: #f5f5f5;
+                color: #333333;
+            }
+            </style>"""
+        st.markdown(custom_css1, unsafe_allow_html=True)
         
         if page == "Home":
             Home() 
@@ -357,48 +427,88 @@ if st.session_state["authentication_status"]:
             mycursor.execute("SELECT student_id FROM student WHERE student_email = %s", (st.session_state["username"], ))
             result = mycursor.fetchall()
             student_id = result[0][0]
-            st.title("Student Detail")
+
             mycursor.execute("SELECT * FROM student WHERE student_id = %s", (student_id, ))
             result = mycursor.fetchall()
             # Creating a DataFrame
+
+            temp = ""
+            if result[0][5] == 1:
+                temp = "Freshman"
+            elif result[0][5] == 2:
+                temp = "Sophomore"
+            elif result[0][5] == 3:  
+                temp = "Junior"
+            elif result[0][5] == 4:
+                temp = "Senior"
+
             invoice_df = pd.DataFrame(result, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
             invoice_df['student_dateofbirth'] = invoice_df['student_dateofbirth'].astype(str)
             invoice_df['student_role'] = "Student"
-            col1 = st.columns([0.5, 1.8, 5, 5, 1, 1])
+
+            css = """
+                    <style>
+                        .title-container {
+                            padding-bottom: 20px; /* Adjust the value as needed */
+                            padding-left: 90px;
+                        }
+                    </style>
+                    """
+
+            st.markdown(css, unsafe_allow_html=True)
+            st.markdown('<div class="title-container"> <h1>Student Detail</h1>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)
+
+
+            col1 = st.columns([1, 2, 5, 5, 1, 1])
+            student_pic = [
+                """
+
+                img {
+                border-radius: 100%;
+                
+                }
+                
+                """
+            ]
             with col1[1]:
-                st.image("image/360_F_553796090_XHrE6R9jwmBJUMo9HKl41hyHJ5gqt9oz.jpg", width=200)
+                with stylable_container(
+                key="image", 
+                css_styles=student_pic,
+            ): st.image("image/360_F_553796090_XHrE6R9jwmBJUMo9HKl41hyHJ5gqt9oz.jpg", width=200)
             with col1[2]:
                 st.title(f"{result[0][1]} {result[0][2]}")
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 120px'><strong>Year: {result[0][5]}</strong></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 120px; color: #B3B3B3; font-weight: 500;'>Student ({temp})</p>", unsafe_allow_html=True)    
             col = st.columns([0.1, 0.2, 0.2, 0.2, 0.6])
             with col[1]:
-                st.markdown(f"<p style='font-size: 25px;'><strong>First Name:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][1])}</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 25px;'><strong>Email:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][8])}</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 25px;'><strong>Department:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][4])}</strong></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>First Name:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][1])}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Email:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][8])}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Department:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][4])}</p>", unsafe_allow_html=True)
             with col[2]:
-                st.markdown(f"<p style='font-size: 25px;'><strong>Last name:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][2])}</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 25px;'><strong>Gender:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][3])}</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 25px;'><strong>Semester:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][6])}</strong></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Last name:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][2])}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Gender:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][3])}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Semester:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][6])}</p>", unsafe_allow_html=True)
             with col[3]:
-                st.markdown(f"<p style='font-size: 25px;'><strong>ID:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][0])}</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 25px;'><strong>Birthday:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][10])}</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 25px;'><strong>Phonenumber:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][9])}</strong></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>ID:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][0])}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Birthday:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][10])}</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Phone Number:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][9])}</p>", unsafe_allow_html=True)
+
             with col[4]:
                 st.subheader("Course Detail")
                 st.dataframe(invoice_df)
             col = st.columns([0.065, 0.4, 0.4])
             with col[1]:
-                st.markdown(f"<p style='font-size: 25px;'><strong>Address:</strong></p>", unsafe_allow_html=True)
-                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'><strong>{str(result[0][7])}</strong></p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Address:</p>", unsafe_allow_html=True)
+                st.markdown(f"<p style='font-size: 20px; padding-bottom: 30px'>{str(result[0][7])}</p>", unsafe_allow_html=True)
         elif page == "Course":
             # Sample course data
             course_data = {
@@ -474,6 +584,9 @@ if st.session_state["authentication_status"]:
                             st.write(f"**Course School Year:** {course['Course_schoolyear']}")
                             st.write(f"**Timetable:** {course['Timetable']}")
                             st.button(f"**Enrollment** {course['Course ID']}")
+        elif page == "About Us":
+            About()
+
 
         # student_df = invoice_df.drop(columns=['password'])
         # ui.table(student_df)
@@ -496,42 +609,6 @@ custom_css = """
         # border: 1px solid #ccc;
         # border-radius: 5px;
     }
-
-    div.stButton > button:first-child{
-        background-color: rgba(131, 168, 245, 1);
-        color: rgb(255, 255, 255);
-        font-size: 10px;
-        height: 3em;
-        width: 30em;
-        border-radius: 21.5px 21.5px 21.5px 21.5px;
-        margin: 0 auto;
-        display: block;
-    }
-
-    div.stButton > button:hover {
-        background-color: #f5f5f5;
-        color: #333333;
-    }
-
-    div[data-baseweb="select"] {
-        background-color: #ffffff;
-        border: 1px solid #ced4da;
-        border-radius: 5px;
-    }
-
-    div[data-baseweb="select"] > div {
-        padding: 8px 12px;
-        color: #333333;
-    }
-
-    div[data-baseweb="select"] svg {
-        fill: #666666;
-    }
-
-    div[data-baseweb="select"]:hover {
-        border-color: #6c757d;
-    }
-
 
     [data-testid="stForm"] {
         max-height: 10000px;
