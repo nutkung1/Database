@@ -9,7 +9,7 @@ import pandas as pd
 import streamlit_authenticator as stauth
 from st_pages import Page, show_pages
 # from streamlit_extras.stylable_container import stylable_container
-import hydralit_components as hc
+# import hydralit_components as hc
 from streamlit_navigation_bar import st_navbar
 from Home import Home, login, About, CRUD
 from streamlit_extras.stylable_container import stylable_container
@@ -38,15 +38,6 @@ def split_frame(input_df, rows):
 
 load_dotenv()
 
-# Mysql
-# mydb = snowflake.connector.connect(
-#     host=os.getenv("host"),
-#     user=os.getenv("user"),
-#     password=os.getenv("password"),
-#     database=os.getenv("databaseProj"),
-#     auth_plugin='mysql_native_password'
-# )
-# mycursor = mydb.cursor()
 # SNOWFLAKE
 account = os.getenv('account')
 user = os.getenv('user_snow')
@@ -57,12 +48,12 @@ database = os.getenv('database')
 schema = os.getenv('schema')
 
 mydb = snowflake.connector.connect(
-    user="suchanat",
-    password="NuT0863771558-",
-    account="PIPWYPD-LO69630",
-    warehouse="COMPUTE_WH",
-    database="DATABASE",
-    schema="PUBLIC"
+    user=user,
+    password=password,
+    account=account,
+    warehouse=warehouse,
+    database=database,
+    schema=schema
 )
 mycursor = mydb.cursor()
 
@@ -249,18 +240,18 @@ if st.session_state["authentication_status"]:
         styles = {
             "nav": {
                 "background-color": "rgb(135, 206, 235)",  # Sky Blue
-                "padding": "0.25rem 0.5rem",  # Adjust padding
+                "padding": "0.3rem 1rem",  # Adjust padding
                 "margin": "0",  # Remove any margin
             },
             "div": {
-                "max-width": "32rem",
+                "max-width": "42rem",
                 "margin": "0",  # Remove any margin
             },
             "span": {
-                "border-radius": "1rem",
+                "border-radius": "5rem",
                 "color": "rgb(49, 51, 63)",
-                "margin": "0 0.125rem",
-                "padding": "0.25rem 0.375rem",  # Adjust padding
+                "margin": "5 0.325rem",
+                "padding": "0.8rem 0.5rem",  # Adjust padding
             },
             "active": {
                 "background-color": "rgba(255, 255, 255, 0.25)",
@@ -271,8 +262,357 @@ if st.session_state["authentication_status"]:
         }
         
 
-        page = st_navbar(["Home", "CRUD"], styles=styles)
-        if page == "Home":
+        page = st_navbar(["Home", "Student", "Transcript", "Department", "Enrollment", "Course", "CourseName", "Instructor", "Timetable"], styles=styles)
+        if page == "Course":
+            mycursor.execute("SELECT course_id, section, Instructor_firstname, Instructor_lastname, Instructor_ID, Course_schoolyear, Enrollment_id, Timetable_id FROM Course")
+            data = mycursor.fetchall()
+
+            # Creating a DataFrame
+            course_df = pd.DataFrame(data, columns=[
+                'course_id', 'section', 'Instructor_firstname', 'Instructor_lastname', 'Instructor_ID', 'Course_schoolyear', 'Enrollment_id', 'Timetable_id'
+            ])
+
+            # Custom CSS styles
+            css_styles = [
+                """
+                input {
+                    color: #83A8F5;
+                }
+                """,
+            ]
+
+            font_css = """
+            <style>
+            button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
+            font-size: 24px;
+            }
+            </style>
+            """
+
+            # Display the management system interface
+            col = st.columns([2, 2, 1.5, 1.3, 0.7])
+            with col[0]:
+                st.title("Course Management System")
+            with col[1]:
+                with stylable_container(
+                    key="sort_search_by",
+                    css_styles=css_styles,
+                ):
+                    sort_field = st.selectbox("Sort based on...", options=course_df.columns)
+            with col[2]:
+                search_query = st.text_input("Search", "")
+            with col[3]:
+                sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+            with col[4]:
+                st.write(" ")
+                if st.button("Add Course"):
+                    st.switch_page("pages/addCourse.py")
+
+            st.write(font_css, unsafe_allow_html=True)
+
+            # Sort the dataset
+            dataset = course_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+            dataset[sort_field] = dataset[sort_field].astype(str)
+
+            # Filter the dataset based on search query
+            if search_query:
+                dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+                temp = dataset.index
+
+            # Define custom CSS style
+            with st.container(border=True):
+                # Table with view details button
+                colms = st.columns((1, 1, 1, 1, 1, 1, 1, 1))
+                fields = ['course_id', 'section', 'Instructor_firstname', 'Instructor_lastname', 'Instructor_ID', 'Course_schoolyear', 'Enrollment_id', 'Timetable_id']
+                for col, field_name in zip(colms, fields):
+                    col.write(f"<span style='font-weight: bold;'>{field_name}</span>", unsafe_allow_html=True)
+
+                # Display the data
+                if not dataset.empty:
+                    for x in range(len(dataset)):
+                        col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns((1, 1, 1, 1, 1, 1, 1, 1, 1))
+                        col1.write(dataset['course_id'][x])
+                        col2.write(dataset['section'][x])
+                        col3.write(dataset['Instructor_firstname'][x])
+                        col4.write(dataset['Instructor_lastname'][x])
+                        col5.write(dataset['Instructor_ID'][x])
+                        col6.write(dataset['Course_schoolyear'][x])
+                        col7.write(dataset['Enrollment_id'][x])
+                        col8.write(dataset['Timetable_id'][x])
+                        button_phold = col9.empty()
+                        do_action = button_phold.button("👁️ View Details", key=x)
+
+                        if do_action:
+                            st.session_state["course_id"] = dataset['course_id'][x]
+                            st.switch_page("pages/courseDetail.py")
+                else:
+                    st.warning("No data matching the search query.")
+        elif page == "Instructor":
+            mycursor.execute("SELECT * FROM instructor")
+            data = mycursor.fetchall()
+
+            # Creating a DataFrame
+            columns = ['Instructor_ID', 'Instructor_firstname', 'Instructor_lastname', 'Instructor_gender', 'Instructor_dateofbirth', 'Instructor_phone', 'Instructor_email', 'Instructor_address_1']
+            instructor_df = pd.DataFrame(data, columns=columns)
+
+            # Custom CSS styles
+            css_styles = [
+                """
+                input {
+                    color: #83A8F5;
+                }
+                """
+            ]
+
+            font_css = """
+            <style>
+            button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
+                font-size: 24px;
+            }
+            </style>
+            """
+
+            # Layout for the management system
+            col = st.columns([2, 2, 1.5, 1.3, 0.7])
+            with col[0]:
+                st.title("Instructor Management System")
+            with col[1]:
+                with stylable_container(
+                    key="sort_search_by",
+                    css_styles=css_styles,
+                ): 
+                    sort_field = st.selectbox("Sort based on...", options=instructor_df.columns)
+            with col[2]:
+                search_query = st.text_input("Search", "")
+            with col[3]:
+                sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+            with col[4]:
+                st.write(" ")
+                if st.button("Add Instructor"):
+                    st.switch_page("pages/addInstructor.py")
+
+            st.write(font_css, unsafe_allow_html=True)
+
+            # Sort the dataset
+            dataset = instructor_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+
+            # Convert the sort_field column to string
+            dataset[sort_field] = dataset[sort_field].astype(str)
+
+            # Filter the dataset based on search query
+            if search_query:
+                dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+                temp = dataset.index
+
+            # Define custom CSS style
+            with st.container():
+                # Table with view details button
+                colms = st.columns((1, 1, 1, 1, 1, 1, 1, 1, 1))
+                fields = ['Instructor_ID', 'Instructor_firstname', 'Instructor_lastname', 'Instructor_gender', 'Instructor_dateofbirth', 'Instructor_phone', 'Instructor_email', 'Instructor_address_1']
+                for col, field_name in zip(colms, fields):
+                    # header with middle-sized font
+                    col.write(f"<span style='font-weight: bold;'>{field_name}</span>", unsafe_allow_html=True)
+                
+                # Display the data
+                if not dataset.empty:
+                    for x in range(len(dataset)):
+                        col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns((1, 1, 1, 1, 1, 1, 1, 1, 1))
+                        col1.write(dataset['Instructor_ID'][x])
+                        col2.write(dataset['Instructor_firstname'][x])
+                        col3.write(dataset['Instructor_lastname'][x])
+                        col4.write(dataset['Instructor_gender'][x])
+                        col5.write(dataset['Instructor_dateofbirth'][x])
+                        col6.write(dataset['Instructor_phone'][x])
+                        col7.write(dataset['Instructor_email'][x])
+                        col8.write(dataset['Instructor_address_1'][x])
+                        button_phold = col9.empty()
+                        do_action = button_phold.button("👁️ View Details", key=x)
+
+                        if do_action:
+                            st.session_state["Instructor_ID"] = dataset['Instructor_ID'][x]
+                            st.switch_page("pages/instructorDetail.py")
+                else:
+                    st.warning("No data matching the search query.")
+
+        elif page == "Department":
+            mycursor.execute("SELECT * FROM department")
+            data = mycursor.fetchall()
+
+            # Creating a DataFrame
+            invoice_df = pd.DataFrame(data, columns=[
+                'Department_name', 'program', 
+                'instructor_firstname', 'instructor_lastname'
+            ])
+
+            # Custom CSS for input styling
+            css_styles = [
+                """
+                input {
+                    color: #83A8F5;
+                }
+                """,
+            ]
+
+            # Custom CSS for font styling
+            font_css = """
+            <style>
+            button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
+                font-size: 24px;
+            }
+            </style>
+            """
+
+            col = st.columns([2, 2, 1.5, 1.3, 0.7])
+            with col[0]:
+                st.title("Management System")
+            with col[1]:
+                with stylable_container(key="sort_search_by", css_styles=css_styles):
+                    sort_field = st.selectbox("Sort based on...", options=invoice_df.columns)
+            with col[2]:
+                search_query = st.text_input("Search", "")
+            with col[3]:
+                sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+            with col[4]:
+                st.write(" ")
+                if st.button("Add Instructor"):
+                    st.switch_page("pages/instructor.py")
+
+            st.write(font_css, unsafe_allow_html=True)
+
+            # Sort the dataset
+            dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+            dataset[sort_field] = dataset[sort_field].astype(str)
+
+            # Filter the dataset based on search query
+            if search_query:
+                dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+                temp = dataset.index
+
+            # Custom CSS style for the container
+            st.markdown("""
+            <style>
+            .stContainer {
+                border: 1px solid #83A8F5;
+                padding: 20px;
+                border-radius: 10px;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+            with st.container():
+                # Table with view details button
+                colms = st.columns((1, 1, 1, 1, 1))
+                fields = ['Department_name', 'program', 'instructor_firstname', 'instructor_lastname']
+                for col, field_name in zip(colms, fields):
+                    col.write(f"<span style='font-weight: bold;'>{field_name}</span>", unsafe_allow_html=True)
+
+                if not dataset.empty:
+                    for x in range(len(dataset)):
+                        col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
+                        col1.write(dataset['Department_name'][x])
+                        col2.write(dataset['program'][x])
+                        # col3.write(dataset['instructor_id'][x])
+                        col3.write(dataset['instructor_firstname'][x])
+                        col4.write(dataset['instructor_lastname'][x])
+                        button_phold = col5.empty()
+                        do_action = button_phold.button("👁️ View Details", key=x)
+
+                        if do_action:
+                            st.session_state["ID"] = dataset['instructor_id'][x]
+                            st.switch_page("pages/instructorDetail.py")
+                else:
+                    st.warning("No data matching the search query.")
+        elif page == "Enrollment":
+            mycursor.execute("SELECT * FROM enrollment")
+            data = mycursor.fetchall()
+
+            # Creating a DataFrame
+            invoice_df = pd.DataFrame(data, columns=[
+                'Enrollment_ID', 'enrollment_schoolyear', 'enrollment_course', 
+                'enrollment_is_active', 'enrollment_created_at', 'enrollment_created_by', 
+                'enrollment_updated_at', 'enrollment_updated_by', 'student_id'
+            ])
+
+            # Custom CSS for input styling
+            css_styles = [
+                """
+                input {
+                    color: #83A8F5;
+                }
+                """,
+            ]
+
+            # Custom CSS for font styling
+            font_css = """
+            <style>
+            button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
+                font-size: 24px;
+            }
+            </style>
+            """
+
+            col = st.columns([2, 2, 1.5, 1.3, 0.7])
+            with col[0]:
+                st.title("Management System")
+            with col[1]:
+                with stylable_container(key="sort_search_by", css_styles=css_styles):
+                    sort_field = st.selectbox("Sort based on...", options=invoice_df.columns)
+            with col[2]:
+                search_query = st.text_input("Search", "")
+            with col[3]:
+                sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+            with col[4]:
+                st.write(" ")
+                if st.button("Add Enrollment"):
+                    st.switch_page("pages/enrollment.py")
+
+            st.write(font_css, unsafe_allow_html=True)
+
+            # Sort the dataset
+            dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+            dataset[sort_field] = dataset[sort_field].astype(str)
+
+            # Filter the dataset based on search query
+            if search_query:
+                dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+                temp = dataset.index
+
+            # Custom CSS style for the container
+            st.markdown("""
+            <style>
+            .stContainer {
+                border: 1px solid #83A8F5;
+                padding: 20px;
+                border-radius: 10px;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+
+            with st.container():
+                # Table with view details button
+                colms = st.columns((1, 1, 1, 1, 1, 1))
+                fields = ['Enrollment_ID', 'enrollment_schoolyear', 'enrollment_course', 'enrollment_is_active', 'enrollment_created_at']
+                for col, field_name in zip(colms, fields):
+                    col.write(f"<span style='font-weight: bold;'>{field_name}</span>", unsafe_allow_html=True)
+                
+                if not dataset.empty:
+                    for x in range(len(dataset)):
+                        col1, col2, col3, col4, col5, col6 = st.columns((1, 1, 1, 1, 1, 1))
+                        col1.write(dataset['Enrollment_ID'][x])
+                        col2.write(dataset['enrollment_schoolyear'][x])
+                        col3.write(dataset['enrollment_course'][x])
+                        col4.write(dataset['enrollment_is_active'][x])
+                        col5.write(dataset['enrollment_created_at'][x])
+                        button_phold = col6.empty()
+                        do_action = button_phold.button("👁️ View Details", key=x)
+
+                        if do_action:
+                            st.session_state["ID"] = dataset['Enrollment_ID'][x]
+                            st.switch_page("pages/enrollment.py")
+                else:
+                    st.warning("No data matching the search query.")
+                
+        elif page == "Home":
             custom_css1="""<style>    div.stButton > button:first-child{
                 background-color: rgba(131, 168, 245, 1);
                 color: rgb(255, 255, 255);
@@ -291,7 +631,7 @@ if st.session_state["authentication_status"]:
             </style>"""
             st.markdown(custom_css1, unsafe_allow_html=True)
             Home() 
-        elif page == "CRUD":
+        elif page == "Student":
             mycursor.execute("SELECT * FROM student")
             data = mycursor.fetchall()
             # Creating a DataFrame
@@ -348,7 +688,6 @@ if st.session_state["authentication_status"]:
 
             # Define custom CSS style
                 
-
             with st.container( border=True):
                 # Table with view details button
                 colms = st.columns((1, 1, 1, 1, 1, 1, 1))
@@ -377,6 +716,88 @@ if st.session_state["authentication_status"]:
                             st.switch_page("pages/studentDetail.py")
                 else:
                     st.warning("No data matching the search query.")
+        elif page == "Transcript":
+            mycursor.execute("SELECT * FROM transcript")
+            data = mycursor.fetchall()
+            # Creating a DataFrame
+            invoice_df = pd.DataFrame(data, columns=['Transcript_ID', 'Student_ID', 'Student_year', 'Credit', 'GPAX', 'Transcript_Path'])
+            # invoice
+            css_styles = [
+                """
+                input {
+                    
+                    color: #83A8F5;
+                }
+                """,
+            ]
+
+            font_css = """
+            <style>
+            button[data-baseweb="tab"] > div[data-testid="stMarkdownContainer"] > p {
+            font-size: 24px;
+            }
+            </style>
+            """
+            col = st.columns([2, 2,1.5, 1.3,0.7])
+            with col[0]:
+                st.title("Management System")
+            with col[1]:
+                with stylable_container(
+                key="sort_search_by",
+                css_styles=css_styles,
+            ): sort_field = st.selectbox("Sort based on...", options=invoice_df.columns)
+            with col[2]:
+                search_query = st.text_input("Search", "")
+            with col[3]:
+                sort_direction = st.radio("Sorting", options=["⬆️", "⬇️"], horizontal=True)
+            with col[4]:
+                st.write(" ")
+                if st.button("Add Transcript"):
+                    st.switch_page("pages/Transcript.py")
+                
+            st.write(font_css, unsafe_allow_html=True)
+            st.write(font_css, unsafe_allow_html=True)
+            # Sort the dataset
+            dataset = invoice_df.sort_values(by=sort_field, ascending=sort_direction == "⬆️", ignore_index=True)
+            # Convert the sort_field column to string
+            dataset[sort_field] = dataset[sort_field].astype(str)
+
+            # Filter the dataset based on search query
+            if search_query:
+                dataset = dataset[dataset[sort_field].str.contains(search_query, case=False)]
+                temp = dataset.index
+
+            # Define custom CSS style
+                
+            with st.container( border=True):
+                # Table with view details button
+                colms = st.columns((1, 1, 1, 1, 1, 1, 1))
+                fields = ['Transcript_ID', 'Student_ID', 'Student_year', 'Credit', 'GPAX', 'Transcript_Path']
+                for col, field_name in zip(colms, fields):
+                    # header with middle-sized font
+                    col.write(f"<span style='font-weight: bold;'>{field_name}</span>", unsafe_allow_html=True)
+                # st.write(font_css, unsafe_allow_html=True)
+                
+                
+                # Display the data
+                if not dataset.empty:
+                    for x in range(len(dataset)):
+                        col1, col2, col3, col4, col5, col6, col7 = st.columns((1, 1, 1, 1, 1, 1, 1))
+                        col1.write(dataset['Transcript_ID'][x])  # email
+                        col2.write(dataset['Student_ID'][x])  # unique ID
+                        col3.write(dataset['Student_year'][x])   # email status
+                        col4.write(dataset['Credit'][x])
+                        col5.write(dataset['GPAX'][x])
+                        col6.write(dataset['Transcript_Path'][x])
+                        button_phold = col7.empty()
+                        do_action = button_phold.button("👁️ View Details", key=x)
+                        
+                        if do_action:
+                            st.session_state["ID"] = dataset['ID'][x]
+                            st.switch_page("pages/studentDetail.py")
+                else:
+                    st.warning("No data matching the search query.")
+
 
 
     #ROLE Student
@@ -444,6 +865,20 @@ if st.session_state["authentication_status"]:
             invoice_df = pd.DataFrame(result, columns=['student_id', 'student_firstname', 'student_lastname', 'student_gender', 'department_name', 'student_year', 'student_semester', 'student_address', 'student_email', 'student_phone', 'student_dateofbirth'])
             invoice_df['student_dateofbirth'] = invoice_df['student_dateofbirth'].astype(str)
             invoice_df['student_role'] = "Student"
+            data = {
+                'course_id': [101, 102, 103, 104, 105],
+                'course_name': ['CSE101', 'MAT202', 'BIO303', 'CHE404', 'PHY505'],
+                'section': [1, 2, 1, 3, 2],
+                'Instructor_firstname': ['Smith', 'Johnson ', 'Lee', 'Brown', 'Williams'],
+                'Instructor_lastname': ['Doe', 'Smith', 'Brown', 'White', 'Black'],
+                'Instructor_ID': [101, 102, 103, 104, 105],
+                # 'Course_schoolyear': [2021, 2021, 2022, 2022, 2023],
+                # 'Enrollment_id': [301, 302, 303, 304, 305],
+                # 'Timetable_id': [401, 402, 403, 404, 405]
+            }
+
+            # Create DataFrame
+            course_df = pd.DataFrame(data)
 
             css = """
                     <style>
@@ -503,7 +938,7 @@ if st.session_state["authentication_status"]:
 
             with col[4]:
                 st.subheader("Course Detail")
-                st.dataframe(invoice_df)
+                st.table(course_df)
             col = st.columns([0.065, 0.4, 0.4])
             with col[1]:
                 st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Address:</p>", unsafe_allow_html=True)

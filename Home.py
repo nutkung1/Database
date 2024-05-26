@@ -2,14 +2,24 @@ import streamlit as st
 import snowflake.connector
 from streamlit_extras.stylable_container import stylable_container
 
+import os
+
+account = os.getenv('account')
+user = os.getenv('user_snow')
+password = os.getenv('password')
+role = os.getenv('role')
+warehouse = os.getenv('warehouse')
+database = os.getenv('database')
+schema = os.getenv('schema')
+
 mydb = snowflake.connector.connect(
-        user="suchanat",
-        password="NuT0863771558-",
-        account="PIPWYPD-LO69630",
-        warehouse="COMPUTE_WH",
-        database="DATABASE",
-        schema="PUBLIC"
-    )
+    user=user,
+    password=password,
+    account=account,
+    warehouse=warehouse,
+    database=database,
+    schema=schema
+)
 mycursor = mydb.cursor()
 
 def login():
@@ -98,12 +108,11 @@ def Home():
     st.header("News")     
 
     # Define image sources
-    openhouse_src = 'https://scontent.fbkk22-3.fna.fbcdn.net/v/t39.30808-6/322296094_565819111642809_6127783231039668742_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=5f2048&_nc_ohc=MMyyxuA_gJoQ7kNvgE6v6IA&_nc_ht=scontent.fbkk22-3.fna&oh=00_AfATU6shTCR2a8saS8TMxNJka5O6qxjeB562yzvOTU9Hhw&oe=6642B780'
+    openhouse_src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQpIVvi08-eN-zixhDrJUT1TQMFPV6UJ2s29_oO8eAj_g&s'
     university_sport_src = 'https://www.kmutt.ac.th/wp-content/uploads/2024/01/SCM15612-1200x800.jpg'
-    Petchre_Pra_Jom_src = 'https://scontent.fbkk22-7.fna.fbcdn.net/v/t39.30808-6/305927187_567352885190048_1863554905914937964_n.png?stp=dst-png_p720x720&_nc_cat=107&ccb=1-7&_nc_sid=5f2048&_nc_ohc=eiykJzl3WgkQ7kNvgFc36pn&_nc_ht=scontent.fbkk22-7.fna&oh=00_AfCx3AkgdHWFCW9_5-O18eMkjwCxT6LYs-yyFr_YwKgtAw&oe=664299A9'
-    comcamp_src = 'https://scontent.fbkk22-6.fna.fbcdn.net/v/t39.30808-1/435764432_1101676158081572_6864015543597168996_n.jpg?stp=dst-jpg_p480x480&_nc_cat=102&ccb=1-7&_nc_sid=5f2048&_nc_ohc=WFZ4TCoUp2oQ7kNvgHkJImv&_nc_ht=scontent.fbkk22-6.fna&oh=00_AfCXurSMULaKSZP-50cahjkNbgeFL9BwUh5s3_ml4yF9kw&oe=6642BEB9'
-    orientation_src = 'https://media.discordapp.net/attachments/1081112018360221696/1237777829580640277/orientation.jpg?ex=663ce1ef&is=663b906f&hm=0716080b9185b809037fddb341594fd81d6d92ed30fd3b6bfbf0ab51dcf118f9&=&format=webp&width=718&height=478'
-
+    Petchre_Pra_Jom_src = 'https://admission.kmutt.ac.th/stocks/discover_banner/c690x390/oa/ej/fr2xoaej6t/kmutt.png'
+    comcamp_src = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2sEAtlMynbPAEqDQm_vAKMDIhuFZYbT9FPWDczlzZJQ&s'
+    orientation_src = 'https://cdn.zipeventapp.com/images/events/3F5C62F5-821F-4D6F-9B5E-AE7D31D85BCC/FD3A1F59-AE42-4D1E-94DE-79D024260744.jpg'
     # Construct HTML strings for each image
     openhouse_img = f'<img src="{openhouse_src}" alt="openhouse" width="300" height="250" style="margin-right: 10px;">'
     university_sport_img = f'<img src="{university_sport_src}" alt="university_sport" width="300" height="250" style="margin-right: 10px;">'
@@ -138,7 +147,7 @@ def Home():
         with col2:
             container = st.container()
             container.markdown("""<div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            CPE241 <br> Database systems </div>""", unsafe_allow_html=True)
+            CPE241 <br> Linear Algebra </div>""", unsafe_allow_html=True)
             container = st.container()
             container.markdown("""<div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
             - <br> - </div>""", unsafe_allow_html=True)
@@ -152,11 +161,11 @@ def Home():
         with col2:
             container = st.container()
             container.markdown("""<div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            CPE241 <br> Database systems </div>""", unsafe_allow_html=True)
+            CPE241 <br> Introduction to Computer Science </div>""", unsafe_allow_html=True)
             container = st.container()
             container.markdown("""
             <div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            CPE232 <br> Data models </div>""", unsafe_allow_html=True)
+            CPE232 <br> Linear Algebra </div>""", unsafe_allow_html=True)
 
     elif button_wed :
         col1,col2 = st.columns([1,9])
@@ -167,11 +176,11 @@ def Home():
         with col2:
             container = st.container()
             container.markdown("""<div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            STA302 <br> Statistics for engineering </div>""", unsafe_allow_html=True)
+            STA302 <br> Biology Fundamentals </div>""", unsafe_allow_html=True)
             container = st.container()
             container.markdown("""
             <div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            CPE223 <br> Computer architectures </div>""", unsafe_allow_html=True)
+            CPE223 <br> Chemistry Essentials </div>""", unsafe_allow_html=True)
 
     elif button_thu :
         col1,col2 = st.columns([1,9])
@@ -182,17 +191,26 @@ def Home():
         with col2:
             container = st.container()
             container.markdown("""<div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            STA302 <br> Statistics for engineering </div>""", unsafe_allow_html=True)
+            STA302 <br> Physics Principles </div>""", unsafe_allow_html=True)
             container = st.container()
             container.markdown("""
             <div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
-            GEN111 <br> Man and ethics of living </div>""", unsafe_allow_html=True)
+            GEN111 <br> Introduction to Computer Science </div>""", unsafe_allow_html=True)
 
     elif button_fri :
         col1,col2 = st.columns([1,9])
         with col1:
             st.markdown('<div style="font-size: 16px; color: blue;"><br><br>9:30-12:30</div>', unsafe_allow_html=True)
             st.markdown('<div style="font-size: 16px; color: blue;"><br><br><br><br>13:30-16:30</div>', unsafe_allow_html=True)
+
+        with col2:
+            container = st.container()
+            container.markdown("""<div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
+            STA302 <br> Biology Fundamentals </div>""", unsafe_allow_html=True)
+            container = st.container()
+            container.markdown("""
+            <div style="border : 1px solid black; padding: 20px; margin: 20px; border-radius: 5px; background-color: #f9f9f9;">
+            GEN111 <br> Introduction to Computer Science </div>""", unsafe_allow_html=True)
 
 def CRUD():
     custom_css = """
