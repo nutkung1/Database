@@ -14,13 +14,23 @@ def hide_sidebar():
 
 student_id = st.session_state["ID"]
 def Detail():
+    import os
+
+    account = os.getenv('account')
+    user = os.getenv('user_snow')
+    password = os.getenv('password')
+    role = os.getenv('role')
+    warehouse = os.getenv('warehouse')
+    database = os.getenv('database')
+    schema = os.getenv('schema')
+
     mydb = snowflake.connector.connect(
-        user="suchanat",
-        password="NuT0863771558-",
-        account="PIPWYPD-LO69630",
-        warehouse="COMPUTE_WH",
-        database="DATABASE",
-        schema="PUBLIC"
+        user=user,
+        password=password,
+        account=account,
+        warehouse=warehouse,
+        database=database,
+        schema=schema
     )
     mycursor = mydb.cursor()
     mycursor.execute("SELECT * FROM student WHERE student_id = %s", (student_id, ))
@@ -55,6 +65,20 @@ def Detail():
     st.markdown(css, unsafe_allow_html=True)
     st.markdown('<div class="title-container"> <h1>Student Detail</h1>', unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
+    data = {
+                'course_id': [101, 102, 103, 104, 105],
+                'course_name': ['CSE101', 'MAT202', 'BIO303', 'CHE404', 'PHY505'],
+                'section': [1, 2, 1, 3, 2],
+                'Instructor_firstname': ['Smith', 'Johnson ', 'Lee', 'Brown', 'Williams'],
+                'Instructor_lastname': ['Doe', 'Smith', 'Brown', 'White', 'Black'],
+                'Instructor_ID': [101, 102, 103, 104, 105],
+                # 'Course_schoolyear': [2021, 2021, 2022, 2022, 2023],
+                # 'Enrollment_id': [301, 302, 303, 304, 305],
+                # 'Timetable_id': [401, 402, 403, 404, 405]
+            }
+
+            # Create DataFrame
+    course_df = pd.DataFrame(data)
 
     temp = ""
     if result[0][5] == 1:
@@ -156,7 +180,7 @@ def Detail():
 
     with col[4]:
         st.subheader("Course Detail")
-        st.dataframe(invoice_df)
+        st.dataframe(course_df)
     col = st.columns([0.065, 0.4, 0.4])
     with col[1]:
         st.markdown(f"<p style='font-size: 20px; color: #B3B3B3'>Address:</p>", unsafe_allow_html=True)

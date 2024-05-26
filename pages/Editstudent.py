@@ -2,16 +2,26 @@ import streamlit as st
 import snowflake.connector
 import datetime
 
+import os
+
+account = os.getenv('account')
+user = os.getenv('user_snow')
+password = os.getenv('password')
+role = os.getenv('role')
+warehouse = os.getenv('warehouse')
+database = os.getenv('database')
+schema = os.getenv('schema')
+
 mydb = snowflake.connector.connect(
-    user="suchanat",
-    password="NuT0863771558-",
-    account="PIPWYPD-LO69630",
-    warehouse="COMPUTE_WH",
-    database="DATABASE",
-    schema="PUBLIC"
+    user=user,
+    password=password,
+    account=account,
+    warehouse=warehouse,
+    database=database,
+    schema=schema
 )
 mycursor = mydb.cursor()
-student_id = st.session_state["student_id"]
+student_id = 3
 custom_css = """
 <style>
     div.stButton > button:first-child{
@@ -25,14 +35,14 @@ custom_css = """
     display: block;
     }</style>"""
 st.markdown(custom_css, unsafe_allow_html=True)
-st.markdown(
-    """
-    <div style="background-color:#f63366;padding:10px;border-radius:10px;">
-        <h2 style="color:white;text-align:center;">Edit Student Detail</h2>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# st.markdown(
+#     """
+#     <div style="background-color:#f63366;padding:10px;border-radius:10px;">
+#         <h2 style="color:white;text-align:center;">Edit Student Detail</h2>
+#     </div>
+#     """,
+#     unsafe_allow_html=True
+# )
 def hide_sidebar():
     st.markdown("""
     <style>
@@ -43,6 +53,7 @@ def hide_sidebar():
     """, unsafe_allow_html=True)
 
 with st.form(key="edit_form"):
+    st.title("Edit Student Detail")
     hide_sidebar()
     col = st.columns(2)
     with col[0]:
@@ -61,7 +72,7 @@ with st.form(key="edit_form"):
     if submit:
         mycursor.execute("SELECT MAX(student_id) FROM student")
         result = mycursor.fetchone()[0]
-        next_student_id = result + 1 if result is not None else 1
+        # next_student_id = result + 1 if result is not None else 1
         sql = "UPDATE student SET student_firstname = %s, student_lastname = %s, student_gender = %s, department_name = %s, student_year = %s, student_semester = %s, student_address = %s, student_email = %s, student_phone = %s, student_dateofbirth = %s WHERE student_id = %s"
         # Define the values to be updated in the SQL query
         val = (student_firstname, student_lastname, student_gender, student_department, student_year, student_semester, student_address, student_email, student_phone, student_birth, student_id)
